@@ -1,0 +1,6 @@
+:80 {
+    reverse_proxy 127.0.0.1:8000
+
+    @assets path /app/assets/*
+    header @assets Cache-Control "public, max-age=604800, immutable"
+}

@@ -1,0 +1,91 @@
+# Job 12 结果沉淀
+
+- 项目名: dpcq-ch1-20
+- 能力: manga
+- 状态: completed
+- 适配包: dpcq_ch1_20
+- 原作: 斗破苍穹
+- 章节范围: 1-20
+- 创建时间: 2026-03-19T03:20:14.579918+00:00
+- 更新时间: 2026-03-19T05:15:13.905648+00:00
+
+## 执行摘要
+已按章节工厂模式完成《斗破苍穹》1-20 的漫剧交付，共 20 章。每章均输出分镜 JSON/CSV/XLSX、音频方案、章节预览视频、章节交付视频与 QA 报告。真图数量 60，输出视频数量 42。 已用返工章节结果重建整包交付。
+
+## 自动校验
+- 结论: PASS
+- 通过: 253/253
+
+## 关键产物
+- job_12/research.md
+- job_12/screenplay.md
+- job_12/art_direction.md
+- job_12/prompts.json
+- job_12/storyboard/storyboard.json
+- job_12/chapters_index.json
+- job_12/qa_overview.md
+- job_12/characters/lead_character.png
+- job_12/preview/index.html
+- job_12/preview/preview.gif
+- job_12/preview/preview.mp4
+- job_12/delivery/final_cut.mp4
+- job_12/chapters/chapter_01/preview/chapter_preview.mp4
+- job_12/chapters/chapter_01/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_01/qa/qa_report.md
+- job_12/chapters/chapter_02/preview/chapter_preview.mp4
+- job_12/chapters/chapter_02/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_02/qa/qa_report.md
+- job_12/chapters/chapter_03/preview/chapter_preview.mp4
+- job_12/chapters/chapter_03/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_03/qa/qa_report.md
+- job_12/chapters/chapter_04/preview/chapter_preview.mp4
+- job_12/chapters/chapter_04/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_04/qa/qa_report.md
+- job_12/chapters/chapter_05/preview/chapter_preview.mp4
+- job_12/chapters/chapter_05/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_05/qa/qa_report.md
+- job_12/chapters/chapter_06/preview/chapter_preview.mp4
+- job_12/chapters/chapter_06/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_06/qa/qa_report.md
+- job_12/chapters/chapter_07/preview/chapter_preview.mp4
+- job_12/chapters/chapter_07/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_07/qa/qa_report.md
+- job_12/chapters/chapter_08/preview/chapter_preview.mp4
+- job_12/chapters/chapter_08/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_08/qa/qa_report.md
+- job_12/chapters/chapter_09/preview/chapter_preview.mp4
+- job_12/chapters/chapter_09/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_09/qa/qa_report.md
+- job_12/chapters/chapter_10/preview/chapter_preview.mp4
+- job_12/chapters/chapter_10/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_10/qa/qa_report.md
+- job_12/chapters/chapter_11/preview/chapter_preview.mp4
+- job_12/chapters/chapter_11/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_11/qa/qa_report.md
+- job_12/chapters/chapter_12/preview/chapter_preview.mp4
+- job_12/chapters/chapter_12/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_12/qa/qa_report.md
+- job_12/chapters/chapter_13/preview/chapter_preview.mp4
+- job_12/chapters/chapter_13/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_13/qa/qa_report.md
+- job_12/chapters/chapter_14/preview/chapter_preview.mp4
+- job_12/chapters/chapter_14/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_14/qa/qa_report.md
+- job_12/chapters/chapter_15/preview/chapter_preview.mp4
+- job_12/chapters/chapter_15/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_15/qa/qa_report.md
+- job_12/chapters/chapter_16/preview/chapter_preview.mp4
+- job_12/chapters/chapter_16/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_16/qa/qa_report.md
+- job_12/chapters/chapter_17/preview/chapter_preview.mp4
+- job_12/chapters/chapter_17/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_17/qa/qa_report.md
+- job_12/chapters/chapter_18/preview/chapter_preview.mp4
+- job_12/chapters/chapter_18/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_18/qa/qa_report.md
+- job_12/chapters/chapter_19/preview/chapter_preview.mp4
+- job_12/chapters/chapter_19/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_19/qa/qa_report.md
+- job_12/chapters/chapter_20/preview/chapter_preview.mp4
+- job_12/chapters/chapter_20/delivery/chapter_final_cut.mp4
+- job_12/chapters/chapter_20/qa/qa_report.md

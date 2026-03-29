@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 漫剧工厂</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --paper: rgba(255, 250, 242, 0.94);
+      --panel: rgba(255, 255, 255, 0.76);
+      --ink: #211c18;
+      --muted: #6b6259;
+      --line: #ddd4c7;
+      --accent: #9a3412;
+      --accent-2: #1d4ed8;
+      --green: #166534;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --slate: #475569;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Serif SC", "Noto Serif SC", "Songti SC", serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(154, 52, 18, 0.15), transparent 22%),
+        radial-gradient(circle at 82% 5%, rgba(29, 78, 216, 0.08), transparent 18%),
+        linear-gradient(180deg, #f8f3eb 0%, #ece3d5 100%);
+    }
+
+    .page {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 28px 18px 42px;
+    }
+
+    .hero,
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      grid-template-columns: 1.2fr 0.8fr;
+      margin-bottom: 18px;
+    }
+
+    .content {
+      grid-template-columns: 400px 1fr;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid rgba(145, 129, 112, 0.18);
+      border-radius: 24px;
+      background: var(--paper);
+      box-shadow: 0 20px 40px rgba(31, 27, 22, 0.07);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-copy {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(154, 52, 18, 0.2), transparent 70%);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(154, 52, 18, 0.12);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(34px, 5vw, 62px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .stats {
+      display: grid;
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-value {
+      margin-top: 2px;
+      font-size: 28px;
+    }
+
+    .form-panel,
+    .jobs-panel,
+    .usage-panel,
+    .stage-panel {
+      padding: 22px;
+    }
+
+    .usage-panel,
+    .stage-panel {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+      font: inherit;
+      padding: 12px 14px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 18px;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7c2d12, #c2410c);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    }
+
+    button.tertiary {
+      background: linear-gradient(135deg, #14532d, #16a34a);
+    }
+
+    .button-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .message {
+      margin-top: 12px;
+      min-height: 20px;
+      font-size: 14px;
+    }
+
+    .message.error { color: var(--red); }
+    .message.success { color: var(--green); }
+    .muted { color: var(--muted); }
+
+    .pack-card,
+    .job-card,
+    .usage-card,
+    .stage-card {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .pack-card,
+    .usage-card {
+      margin-top: 18px;
+    }
+
+    .job-card {
+      margin-bottom: 14px;
+    }
+
+    .job-top,
+    .usage-top,
+    .stage-top,
+    .model-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.pending { background: #e2e8f0; color: var(--slate); }
+    .badge.planned { background: #dbeafe; color: #1d4ed8; }
+    .badge.running { background: #fef3c7; color: var(--amber); }
+    .badge.completed { background: #dcfce7; color: var(--green); }
+    .badge.failed { background: #fee2e2; color: var(--red); }
+    .badge.healthy { background: #dcfce7; color: var(--green); }
+    .badge.warning { background: #fef3c7; color: var(--amber); }
+    .badge.switch { background: #dbeafe; color: var(--accent-2); }
+    .badge.exhausted { background: #fee2e2; color: var(--red); }
+    .badge.disabled { background: #e2e8f0; color: var(--slate); }
+    .badge.model-on { background: #dbeafe; color: #1d4ed8; }
+    .badge.model-off { background: #e2e8f0; color: var(--slate); }
+    .badge.value-high { background: #dcfce7; color: var(--green); }
+    .badge.value-mid { background: #fef3c7; color: var(--amber); }
+    .badge.value-low { background: #fee2e2; color: var(--red); }
+
+    .usage-grid,
+    .stage-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .usage-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stage-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .usage-meta,
+    .stage-meta {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .usage-kv,
+    .stage-kv {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .usage-kv strong,
+    .stage-kv strong {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .model-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .model-row {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .model-row small,
+    .stage-card small {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7c2d12, #ea580c);
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin: 8px 0;
+      line-height: 1.45;
+    }
+
+    a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .content,
+      .button-row,
+      .usage-grid,
+      .stage-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="panel hero-copy">
+        <div class="eyebrow">AI 漫剧工厂</div>
+        <h1>把小说章节变成可交付的漫剧生产任务</h1>
+        <p>这里聚焦小说改编生产。你可以直接跑适配包，也可以创建通用任务。首页同时展示任务状态、模型用量和阶段模型分配，让你看到当前每一步实际默认走哪个模型、为什么这样分，以及额度接近阈值时会怎么降级。</p>
+      </div>
+      <div class="panel stats">
+        <div class="stat"><div class="stat-label">能力数量</div><div class="stat-value" id="capabilityCount">0</div></div>
+        <div class="stat"><div class="stat-label">项目数量</div><div class="stat-value" id="projectCount">0</div></div>
+        <div class="stat"><div class="stat-label">任务数量</div><div class="stat-value" id="jobCount">0</div></div>
+        <div class="stat"><div class="stat-label">适配包数量</div><div class="stat-value" id="packCount">0</div></div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="panel form-panel">
+        <h2>创建任务</h2>
+        <label for="capability">能力</label>
+        <select id="capability"></select>
+        <label for="projectName">项目名</label>
+        <input id="projectName" placeholder="漫剧工作台" />
+        <div id="dynamicFields"></div>
+        <button id="submitJob">创建并执行</button>
+        <div id="message" class="message"></div>
+
+        <div class="pack-card">
+          <h2>适配包执行器</h2>
+          <label for="adaptationPack">适配包</label>
+          <select id="adaptationPack"></select>
+          <label for="packProjectName">项目名</label>
+          <input id="packProjectName" />
+          <label for="packSceneCount">分镜图数量</label>
+          <input id="packSceneCount" type="number" value="20" min="2" max="60" />
+          <label for="packBatchSize">每批章节数</label>
+          <input id="packBatchSize" type="number" value="5" min="1" max="20" />
+          <div class="button-row">
+            <button id="runPackPlaceholder">运行整包</button>
+            <button id="runPackReal" class="secondary">整包真图模式</button>
+          </div>
+          <div class="button-row">
+            <button id="runPackBatches">分批运行</button>
+            <button id="runPackBatchesReal" class="tertiary">分批真图模式</button>
+          </div>
+          <div id="packMeta" class="message muted"></div>
+          <div id="packMessage" class="message"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel usage-panel">
+          <div class="usage-top">
+            <div>
+              <h2>模型用量监控</h2>
+              <p id="usageNote">正在读取模型用量状态…</p>
+            </div>
+            <div class="muted" id="usagePeriod"></div>
+          </div>
+          <div class="section-title">当前状态</div>
+          <div id="usageCards" class="usage-grid"></div>
+          <div class="section-title">配置与账本</div>
+          <div class="usage-meta">
+            <div class="usage-kv"><strong>配置文件</strong><span id="usageConfigPath">-</span></div>
+            <div class="usage-kv"><strong>账本文件</strong><span id="usageLedgerPath">-</span></div>
+          </div>
+        </div>
+
+        <div class="panel stage-panel">
+          <div class="stage-top">
+            <div>
+              <h2>阶段模型分配</h2>
+              <p id="stageStrategyDescription">正在读取阶段方案…</p>
+            </div>
+            <div class="muted" id="stageUpdatedAt"></div>
+          </div>
+          <div class="section-title">当前方案</div>
+          <div class="stage-meta">
+            <div class="stage-kv"><strong>策略名</strong><span id="stageStrategyName">-</span></div>
+            <div class="stage-kv"><strong>结构化文件</strong><span><code>E:\work\project-manager\workhome\projects\ai-manga-factory\data\reference\model_stage_plan.json</code></span></div>
+          </div>
+          <div id="stageCards" class="stage-grid"></div>
+        </div>
+
+        <div class="panel jobs-panel">
+          <h2>任务列表</h2>
+          <div id="jobs"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const capabilitySelect = document.getElementById("capability");
+    const dynamicFields = document.getElementById("dynamicFields");
+    const jobsEl = document.getElementById("jobs");
+    const messageEl = document.getElementById("message");
+    const packMessageEl = document.getElementById("packMessage");
+    const packMetaEl = document.getElementById("packMeta");
+    const projectNameEl = document.getElementById("projectName");
+    const adaptationPackEl = document.getElementById("adaptationPack");
+    const packProjectNameEl = document.getElementById("packProjectName");
+    const packSceneCountEl = document.getElementById("packSceneCount");
+    const packBatchSizeEl = document.getElementById("packBatchSize");
+    const usageCardsEl = document.getElementById("usageCards");
+    const usageNoteEl = document.getElementById("usageNote");
+    const usagePeriodEl = document.getElementById("usagePeriod");
+    const usageConfigPathEl = document.getElementById("usageConfigPath");
+    const usageLedgerPathEl = document.getElementById("usageLedgerPath");
+    const stageCardsEl = document.getElementById("stageCards");
+    const stageStrategyNameEl = document.getElementById("stageStrategyName");
+    const stageStrategyDescriptionEl = document.getElementById("stageStrategyDescription");
+    const stageUpdatedAtEl = document.getElementById("stageUpdatedAt");
+
+    let capabilities = [];
+    let adaptationPacks = [];
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatPercent(value) {
+      const ratio = Number(value || 0);
+      return `${Math.round(ratio * 100)}%`;
+    }
+
+    function statusLabel(status) {
+      return ({
+        pending: "待处理",
+        planned: "已规划",
+        running: "执行中",
+        completed: "已完成",
+        failed: "失败",
+        healthy: "健康",
+        warning: "预警",
+        switch: "已切换",
+        exhausted: "已封禁",
+        disabled: "已禁用"
+      })[status] || status;
+    }
+
+    function modelBadgeLabel(usesModel) {
+      return usesModel ? "使用模型" : "本地流程";
+    }
+
+    function artifactTypeLabel(type) {
+      return ({
+        markdown: "文档",
+        json: "结构化数据",
+        image: "图片",
+        gif: "GIF",
+        video: "视频",
+        html: "页面",
+        directory: "目录"
+      })[type] || type;
+    }
+
+    function valueBadgeClass(value) {
+      return ({
+        "最高": "value-high",
+        "高": "value-high",
+        "中高": "value-mid",
+        "中": "value-mid",
+        "中低": "value-low",
+        "低": "value-low",
+        "待验证": "value-mid"
+      })[value] || "value-mid";
+    }
+
+    function capabilityLabel(capabilityId) {
+      const item = capabilities.find((entry) => entry.id === capabilityId);
+      return item ? item.name : capabilityId;
+    }
+
+    function setMessage(target, text, kind = "") {
+      target.textContent = text;
+      target.className = `message ${kind}`.trim();
+    }
+
+    function renderField(field) {
+      const fieldId = `field_${field.key}`;
+      if (field.field_type === "boolean") {
+        return `<label for="${fieldId}">${escapeHtml(field.label)}</label><select id="${fieldId}"><option value="">请选择</option><option value="true">是</option><option value="false">否</option></select>`;
+      }
+      if (field.field_type === "array") {
+        return `<label for="${fieldId}">${escapeHtml(field.label)}</label><textarea id="${fieldId}" placeholder='JSON 数组，例如：[{"chapter":1,"title":"第1章","summary":"...","key_scene":"...","emotion":"压迫感"}]'></textarea>`;
+      }
+      const inputType = field.field_type === "integer" ? "number" : "text";
+      return `<label for="${fieldId}">${escapeHtml(field.label)}</label><input id="${fieldId}" type="${inputType}" placeholder="${escapeHtml(field.description)}" />`;
+    }
+
+    function renderFields(capabilityId) {
+      const capability = capabilities.find((item) => item.id === capabilityId);
+      dynamicFields.innerHTML = capability ? capability.input_fields.map(renderField).join("") : "";
+    }
+
+    function renderJobs(jobs) {
+      if (!jobs.length) {
+        jobsEl.innerHTML = '<p class="muted">当前还没有任务。</p>';
+        return;
+      }
+      jobsEl.innerHTML = jobs.map((job) => `
+        <div class="job-card">
+          <div class="job-top">
+            <div>
+              <h3>${escapeHtml(capabilityLabel(job.capability_id))} #${job.id}</h3>
+              <div class="muted">${new Date(job.updated_at).toLocaleString()}</div>
+            </div>
+            <div class="badge ${job.status}">${escapeHtml(statusLabel(job.status))}</div>
+          </div>
+          <div>${escapeHtml(job.summary)}</div>
+          ${job.error ? `<div class="message error">${escapeHtml(job.error)}</div>` : ""}
+          <div class="section-title">执行步骤</div>
+          <ul>${job.workflow.map((step) => `<li><strong>${escapeHtml(step.title)}</strong> <span class="muted">(${escapeHtml(statusLabel(step.status))})</span><br />${escapeHtml(step.description)}${step.details ? `<br /><span class="message error">${escapeHtml(step.details)}</span>` : ""}</li>`).join("")}</ul>
+          <div class="section-title">产物</div>
+          <ul>${job.artifacts.map((artifact) => `<li>${artifact.path_hint ? `<a href="/artifacts/${artifact.path_hint}" target="_blank" rel="noreferrer">${escapeHtml(artifact.label)}</a>` : escapeHtml(artifact.label)} <span class="muted">(${escapeHtml(artifactTypeLabel(artifact.artifact_type))})</span></li>`).join("")}</ul>
+        </div>
+      `).join("");
+    }
+
+    function renderUsage(data) {
+      usageNoteEl.textContent = data.measurement_note || "文本按估算 tokens 统计，图片和视频按调用次数统计。";
+      usagePeriodEl.textContent = data.period_key ? `统计周期 ${data.period_key}` : "";
+      usageConfigPathEl.innerHTML = `<code>${escapeHtml(data.config_path || "-")}</code>`;
+      usageLedgerPathEl.innerHTML = `<code>${escapeHtml(data.ledger_path || "-")}</code>`;
+
+      const items = Array.isArray(data.capabilities) ? data.capabilities : [];
+      if (!items.length) {
+        usageCardsEl.innerHTML = '<p class="muted">当前还没有模型用量数据。</p>';
+        return;
+      }
+
+      usageCardsEl.innerHTML = items.map((capability) => {
+        const lastRouting = capability.last_routing || {};
+        const recentEvents = Array.isArray(capability.recent_events) ? capability.recent_events : [];
+        const activeModel = (capability.models || []).find((item) => item.name === capability.active_model) || capability.models[0] || {};
+        const capabilityLabel = capability.capability === "text"
+          ? "文本模型"
+          : capability.capability === "image"
+            ? "图片模型"
+            : "视频模型";
+        return `
+          <div class="usage-card">
+            <div class="usage-top">
+              <div>
+                <h3>${escapeHtml(capabilityLabel)}</h3>
+                <div class="muted">当前模型：<code>${escapeHtml(capability.active_model || "未命中")}</code></div>
+              </div>
+              <div class="badge ${escapeHtml(activeModel.status || "pending")}">${escapeHtml(statusLabel(activeModel.status || "pending"))}</div>
+            </div>
+            <div class="usage-meta">
+              <div class="usage-kv"><strong>预警阈值</strong><span>${formatPercent(capability.warning_ratio)}</span></div>
+              <div class="usage-kv"><strong>切换阈值</strong><span>${formatPercent(capability.switch_ratio)}</span></div>
+              <div class="usage-kv"><strong>最近路由</strong><span>${escapeHtml(lastRouting.reason || "暂无")}</span></div>
+            </div>
+            <div class="model-list">
+              ${(capability.models || []).map((model) => `
+                <div class="model-row">
+                  <div>
+                    <strong>${escapeHtml(model.label)}</strong>
+                    <small>
+                      模型名：<code>${escapeHtml(model.name)}</code><br />
+                      用量：${escapeHtml(model.budget_limit == null ? `${model.usage_value} ${model.usage_unit}` : `${model.usage_value} / ${model.budget_limit} ${model.usage_unit}`)}<br />
+                      成功 ${model.success_count} / 失败 ${model.failure_count} / 总请求 ${model.request_count}${model.last_error ? `<br />最近错误：${escapeHtml(model.last_error)}` : ""}${model.exhausted_until ? `<br />封禁到：${escapeHtml(model.exhausted_until)}` : ""}
+                    </small>
+                    <div class="progress"><div class="progress-bar" style="width: ${Math.min(100, Math.round((Number(model.usage_ratio || 0) * 100))) || 0}%"></div></div>
+                  </div>
+                  <div class="badge ${escapeHtml(model.status)}">${escapeHtml(statusLabel(model.status))}</div>
+                </div>
+              `).join("")}
+            </div>
+            ${recentEvents.length ? `<div class="section-title">最近事件</div><ul>${recentEvents.slice(-3).reverse().map((event) => `<li>${escapeHtml(event.reason || event.error || `${event.type || "event"} ${event.model || ""}`)}</li>`).join("")}</ul>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderStagePlan(data) {
+      const strategy = data.strategy || {};
+      const pipeline = Array.isArray(data.pipeline) ? data.pipeline : [];
+      stageStrategyNameEl.textContent = strategy.name || "-";
+      stageStrategyDescriptionEl.textContent = strategy.description || "当前还没有阶段模型方案。";
+      stageUpdatedAtEl.textContent = data.updated_at ? `更新于 ${data.updated_at}` : "";
+
+      if (!pipeline.length) {
+        stageCardsEl.innerHTML = '<p class="muted">当前还没有阶段方案。</p>';
+        return;
+      }
+
+      stageCardsEl.innerHTML = pipeline.map((item) => `
+        <div class="stage-card">
+          <div class="stage-top">
+            <div>
+              <h3>${escapeHtml(item.stage)}</h3>
+              <small>${escapeHtml(item.notes || "")}</small>
+            </div>
+            <div class="badge ${item.uses_model ? "model-on" : "model-off"}">${escapeHtml(modelBadgeLabel(item.uses_model))}</div>
+          </div>
+          <div class="stage-meta">
+            <div class="stage-kv"><strong>默认模型</strong><span>${item.current_default ? `<code>${escapeHtml(item.current_default)}</code>` : "不使用"}</span></div>
+            <div class="stage-kv"><strong>性价比</strong><span><span class="badge ${valueBadgeClass(item.cost_effectiveness)}">${escapeHtml(item.cost_effectiveness)}</span></span></div>
+            <div class="stage-kv"><strong>Coding Plan Pro</strong><span><span class="badge ${valueBadgeClass(item.coding_plan_pro_fit)}">${escapeHtml(item.coding_plan_pro_fit)}</span></span></div>
+          </div>
+          <div class="section-title">入口</div>
+          <ul>${(item.entrypoints || []).map((entry) => `<li><code>${escapeHtml(entry)}</code></li>`).join("")}</ul>
+          <div class="section-title">降级规则</div>
+          ${item.fallbacks && item.fallbacks.length ? `<ul>${item.fallbacks.map((model) => `<li><code>${escapeHtml(model)}</code></li>`).join("")}</ul>` : '<p class="muted">无</p>'}
+        </div>
+      `).join("");
+    }
+
+    function collectInput(capability) {
+      const input = {};
+      for (const field of capability.input_fields) {
+        const el = document.getElementById(`field_${field.key}`);
+        if (!el) continue;
+        let value = "";
+        if (field.field_type === "integer") {
+          value = el.value === "" ? "" : Number(el.value);
+        } else if (field.field_type === "boolean") {
+          value = el.value === "" ? "" : el.value === "true";
+        } else if (field.field_type === "array") {
+          value = el.value.trim();
+          if (value) {
+            value = JSON.parse(value);
+            if (!Array.isArray(value)) throw new Error(`${field.label} 必须是 JSON 数组`);
+          }
+        } else {
+          value = el.value.trim();
+        }
+        if (field.required && (value === "" || Number.isNaN(value))) {
+          throw new Error(`缺少必填字段：${field.label}`);
+        }
+        if (value !== "" && !Number.isNaN(value)) {
+          input[field.key] = value;
+        }
+      }
+      return input;
+    }
+
+    function selectedPack() {
+      return adaptationPacks.find((item) => item.pack_name === adaptationPackEl.value) || null;
+    }
+
+    async function renderPackMeta() {
+      const pack = selectedPack();
+      if (!pack) {
+        packMetaEl.innerHTML = "";
+        return;
+      }
+      const journalLink = `/adaptation-files/${encodeURIComponent(pack.pack_name)}/reports/result_journal.md`;
+      const packName = pack.pack_name;
+      packProjectNameEl.value = pack.default_project_name;
+      packSceneCountEl.value = pack.default_scene_count;
+      packMetaEl.innerHTML = `
+        原作：${escapeHtml(pack.source_title)} | 章节：${escapeHtml(pack.chapter_range)} | 章节数：${pack.chapter_count}
+        <br />
+        <a href="${journalLink}" target="_blank" rel="noreferrer">结果沉淀索引</a> /
+        <span class="muted">正在读取最近一次 job 绑定结果...</span>
+      `;
+
+      const response = await fetch(`/adaptation-packs/${encodeURIComponent(packName)}/latest-result`);
+      if (adaptationPackEl.value !== packName) {
+        return;
+      }
+
+      if (!response.ok) {
+        packMetaEl.innerHTML = `
+          原作：${escapeHtml(pack.source_title)} | 章节：${escapeHtml(pack.chapter_range)} | 章节数：${pack.chapter_count}
+          <br />
+          <a href="${journalLink}" target="_blank" rel="noreferrer">结果沉淀索引</a> /
+          <span class="muted">暂无可用的 job 绑定结果</span>
+        `;
+        return;
+      }
+
+      const latest = await readJson(response);
+      const validationLabel = latest.validation_status
+        ? `${escapeHtml(latest.validation_status)}${latest.validation_passed != null && latest.validation_total != null ? ` ${latest.validation_passed}/${latest.validation_total}` : ""}`
+        : "未提供校验汇总";
+      const sharedLinks = [];
+      if (latest.shared_summary_url) {
+        sharedLinks.push(`<a href="${latest.shared_summary_url}" target="_blank" rel="noreferrer">共享摘要副本</a>`);
+      }
+      if (latest.shared_validation_url) {
+        sharedLinks.push(`<a href="${latest.shared_validation_url}" target="_blank" rel="noreferrer">共享校验副本</a>`);
+      }
+      const sharedLine = sharedLinks.length
+        ? `<br /><span class="muted">共享文件仅用于便捷查看，以 Job ${latest.job_id} 产物为主。</span><br />${sharedLinks.join(" / ")}`
+        : "";
+
+      packMetaEl.innerHTML = `
+        原作：${escapeHtml(pack.source_title)} | 章节：${escapeHtml(pack.chapter_range)} | 章节数：${pack.chapter_count}
+        <br />
+        <a href="${journalLink}" target="_blank" rel="noreferrer">结果沉淀索引</a>
+        <br />
+        最近一次绑定结果：Job ${latest.job_id} / ${escapeHtml(statusLabel(latest.status || "pending"))} / ${validationLabel}
+        <br />
+        <a href="${latest.artifact_summary_url}" target="_blank" rel="noreferrer">Job 摘要</a> /
+        <a href="${latest.artifact_validation_url}" target="_blank" rel="noreferrer">Job 校验</a> /
+        <a href="${latest.artifact_snapshot_url}" target="_blank" rel="noreferrer">Job 快照</a> /
+        <a href="${latest.pack_summary_url}" target="_blank" rel="noreferrer">包内 summary</a> /
+        <a href="${latest.pack_validation_url}" target="_blank" rel="noreferrer">包内 validation</a>
+        ${sharedLine}
+      `;
+    }
+
+    async function readJson(response) {
+      try {
+        return await response.json();
+      } catch (error) {
+        return {};
+      }
+    }
+
+    async function postJson(url, body) {
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+    }
+
+    async function refreshData() {
+      const selectedPackName = adaptationPackEl.value;
+      const [capsRes, projectsRes, jobsRes, packsRes, usageRes, stageRes] = await Promise.all([
+        fetch("/capabilities"),
+        fetch("/projects"),
+        fetch("/jobs"),
+        fetch("/adaptation-packs"),
+        fetch("/provider-usage"),
+        fetch("/model-stage-plan")
+      ]);
+
+      const capsData = await readJson(capsRes);
+      const projectsData = await readJson(projectsRes);
+      const jobsData = await readJson(jobsRes);
+      const packsData = await readJson(packsRes);
+      const usageData = await readJson(usageRes);
+      const stageData = await readJson(stageRes);
+
+      capabilities = capsData.items || [];
+      adaptationPacks = Array.isArray(packsData) ? packsData : [];
+
+      document.getElementById("capabilityCount").textContent = capabilities.length;
+      document.getElementById("projectCount").textContent = (projectsData || []).length;
+      document.getElementById("jobCount").textContent = (jobsData.items || []).length;
+      document.getElementById("packCount").textContent = adaptationPacks.length;
+
+      if (!capabilitySelect.options.length && capabilities.length) {
+        capabilitySelect.innerHTML = capabilities.map((capability) => `<option value="${capability.id}">${escapeHtml(capability.name)}</option>`).join("");
+        renderFields(capabilitySelect.value);
+      }
+
+      adaptationPackEl.innerHTML = adaptationPacks.map((pack) => `<option value="${pack.pack_name}">${escapeHtml(pack.source_title)} (${escapeHtml(pack.chapter_range)})</option>`).join("");
+      if (selectedPackName && adaptationPacks.some((pack) => pack.pack_name === selectedPackName)) {
+        adaptationPackEl.value = selectedPackName;
+      }
+      await renderPackMeta();
+      renderJobs(jobsData.items || []);
+      renderUsage(usageData || {});
+      renderStagePlan(stageData || {});
+    }
+
+    async function runPack(useRealImages, batched) {
+      const pack = selectedPack();
+      if (!pack) {
+        setMessage(packMessageEl, "请先选择适配包。", "error");
+        return;
+      }
+      setMessage(packMessageEl, batched ? "正在提交分批任务..." : "正在提交整包任务...");
+      const url = batched
+        ? `/adaptation-packs/${encodeURIComponent(pack.pack_name)}/batches`
+        : `/adaptation-packs/${encodeURIComponent(pack.pack_name)}/jobs`;
+      const body = batched
+        ? {
+            project_name: packProjectNameEl.value.trim() || pack.default_project_name,
+            batch_size: Number(packBatchSizeEl.value || 5),
+            scene_count: Number(packSceneCountEl.value || pack.default_scene_count),
+            use_real_images: useRealImages
+          }
+        : {
+            project_name: packProjectNameEl.value.trim() || pack.default_project_name,
+            scene_count: Number(packSceneCountEl.value || pack.default_scene_count),
+            use_real_images: useRealImages
+          };
+      const response = await postJson(url, body);
+      const payload = await readJson(response);
+      if (!response.ok) {
+        setMessage(packMessageEl, payload.detail || "适配包启动失败。", "error");
+        return;
+      }
+      if (batched) {
+        setMessage(packMessageEl, `已创建 ${payload.total_batches} 个分批任务。`, "success");
+      } else {
+        const chapterRange = payload.input?.chapter_range || pack.chapter_range;
+        setMessage(packMessageEl, `整包任务已创建，章节范围：${chapterRange}。`, "success");
+      }
+      await refreshData();
+    }
+
+    capabilitySelect.addEventListener("change", () => renderFields(capabilitySelect.value));
+    adaptationPackEl.addEventListener("change", () => {
+      renderPackMeta();
+    });
+
+    document.getElementById("submitJob").addEventListener("click", async () => {
+      const capability = capabilities.find((item) => item.id === capabilitySelect.value);
+      if (!capability) return;
+      let input;
+      try {
+        input = collectInput(capability);
+      } catch (error) {
+        setMessage(messageEl, error.message || "表单输入无效。", "error");
+        return;
+      }
+      setMessage(messageEl, "正在提交任务...");
+      const response = await postJson("/jobs", {
+        capability_id: capability.id,
+        project_name: projectNameEl.value.trim() || `${capability.id}-workspace`,
+        input
+      });
+      const payload = await readJson(response);
+      if (!response.ok) {
+        setMessage(messageEl, payload.detail || "任务创建失败。", "error");
+        return;
+      }
+      setMessage(messageEl, "任务已创建，后台开始执行。", "success");
+      await refreshData();
+    });
+
+    document.getElementById("runPackPlaceholder").addEventListener("click", () => runPack(false, false));
+    document.getElementById("runPackReal").addEventListener("click", () => runPack(true, false));
+    document.getElementById("runPackBatches").addEventListener("click", () => runPack(false, true));
+    document.getElementById("runPackBatchesReal").addEventListener("click", () => runPack(true, true));
+
+    refreshData();
+    setInterval(refreshData, 5000);
+  </script>
+</body>
+</html>

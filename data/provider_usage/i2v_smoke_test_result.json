@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-19T23:12:34+08:00",
+  "source_image": "E:/work/project-manager/workhome/projects/ai-manga-factory/data/artifacts/job_21/chapters/chapter_01/images/keyframe_01.png",
+  "output_video": "E:/work/project-manager/workhome/projects/ai-manga-factory/data/provider_test_i2v.mp4",
+  "provider": "ark",
+  "model": "doubao-seedance-1-5-pro-251215",
+  "content_mode": "image_to_video_first_frame",
+  "duration_seconds": 5,
+  "ratio": "16:9",
+  "resolution": "720p",
+  "return_last_frame": true,
+  "generate_audio": false,
+  "task_id": "cgt-20260319231146-pvz56",
+  "completion_tokens": 108900,
+  "status": "succeeded"
+}

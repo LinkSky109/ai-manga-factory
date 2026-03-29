@@ -1,0 +1,44 @@
+# Job 39 自动校验报告
+
+- 状态: failed
+- 校验结论: FAIL
+- 通过: 29/37
+
+## 详情
+- [PASS] research.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/research.md
+- [PASS] screenplay.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/screenplay.md
+- [PASS] art_direction.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/art_direction.md
+- [FAIL] prompts.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/prompts.json
+- [FAIL] manifest.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/manifest.json
+- [FAIL] chapters_index.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters_index.json
+- [FAIL] qa_overview.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/qa_overview.md
+- [PASS] characters/lead_character.png -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/characters/lead_character.png
+- [FAIL] storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/storyboard/storyboard.json
+- [FAIL] preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/preview/index.html
+- [FAIL] preview/preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/preview/preview.mp4
+- [FAIL] delivery/final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/delivery/final_cut.mp4
+- [PASS] chapters/chapter_01/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapters/chapter_01/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.csv
+- [PASS] chapters/chapter_01/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_01/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/video/video_plan.json
+- [PASS] chapters/chapter_01/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapters/chapter_01/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/narration_script.txt
+- [PASS] chapters/chapter_01/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/voice_script.txt
+- [PASS] chapters/chapter_01/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/voiceover.mp3
+- [PASS] chapters/chapter_01/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/ambience.wav
+- [PASS] chapters/chapter_01/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/preview/index.html
+- [PASS] chapters/chapter_01/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_01/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_01/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/qa/qa_report.md
+- [PASS] chapters/chapter_01/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/qa/qa_snapshot.json
+- [PASS] chapter_01 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapter_01 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapter_01 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapter_01 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapter_01 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapter_01 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapter_01 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapter_01 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapter_01 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapter_01 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapter_01 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_39/chapters/chapter_01/audio/audio_plan.json

@@ -1,0 +1,28 @@
+﻿{
+  "project": "ai-manga-factory",
+  "timestamp": "2026-03-29 18:29:48",
+  "status": "stable",
+  "summary": "章节工厂代码已回到干净基线，临时 Ark 分析报告已移除，质量门禁入口收敛为单一 JSON 报告。",
+  "checks": [
+    {
+      "name": "chapter_factory_syntax",
+      "status": "pass",
+      "evidence": "python -m py_compile modules/manga/chapter_factory.py"
+    },
+    {
+      "name": "noise_cleanup",
+      "status": "pass",
+      "evidence": "requirements.txt / shared/providers/ark.py / scripts/playwright_source_capture.py cleaned"
+    }
+  ],
+  "retained_artifacts": [
+    "final_quality_report.md",
+    "quality_check_report.json"
+  ],
+  "removed_artifacts": [
+    "ark_usage_optimization_report.json"
+  ],
+  "risks": [
+    "Full integration and browser regression were not executed in this pass."
+  ]
+}

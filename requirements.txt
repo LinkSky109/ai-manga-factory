@@ -1,0 +1,22 @@
+# AI Manga Factory - Python dependencies
+
+# Core
+requests>=2.27.0
+beautifulsoup4>=4.12.0
+fastapi>=0.115.0
+uvicorn>=0.30.0
+
+# Volcengine Ark
+volcengine>=1.0.217
+volcengine-python-sdk[ark]>=5.0.17
+httpx>=0.28.0
+
+# Legacy/optional provider tools
+dashscope>=1.10.0
+
+# Media processing
+Pillow>=9.0.0
+imageio>=2.25.0
+imageio-ffmpeg>=0.4.0
+openpyxl>=3.1.0
+edge-tts>=7.2.0

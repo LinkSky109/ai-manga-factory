@@ -1,0 +1,359 @@
+{
+  "catalog_version": "2026-03-19",
+  "generated_at": "2026-03-19T12:20:00+08:00",
+  "project": "ai-manga-factory",
+  "purpose": "为小说原文接入、认证抓取、离线导入和正文清洗提供可扩展工具目录",
+  "legal_notice": "只应接入你有权访问和处理的原文、官方梗概或授权页面。",
+  "selection_dimensions": [
+    "authenticated_access",
+    "saved_html_support",
+    "offline_extraction",
+    "batch_processing",
+    "structured_output",
+    "python_integration",
+    "human_in_loop"
+  ],
+  "tools": [
+    {
+      "tool_id": "trafilatura",
+      "name": "Trafilatura",
+      "kind": "python_library_and_cli",
+      "license": "Apache-2.0",
+      "status": "candidate",
+      "integration_priority": "high",
+      "fit_score": 9,
+      "primary_use_cases": [
+        "static_public_pages",
+        "offline_html_cleanup",
+        "batch_url_extraction"
+      ],
+      "strengths": [
+        "支持在线 URL 和离线 HTML 两种输入",
+        "可输出 txt、markdown、json、html、xml、csv",
+        "适合把杂乱网页正文清洗成结构化文本"
+      ],
+      "limits": [
+        "不负责登录态维护",
+        "对强交互、重 JS 阅读器页面通常需要浏览器自动化先落 HTML"
+      ],
+      "install": [
+        "pip install trafilatura"
+      ],
+      "current_recommendation": "作为静态页和离线 HTML 的首选正文抽取器",
+      "official_sources": [
+        {
+          "url": "https://github.com/adbar/trafilatura",
+          "note": "官方仓库说明它同时支持 live URLs 和 previously downloaded HTML files，并支持多种输出格式。"
+        },
+        {
+          "url": "https://pypi.org/project/trafilatura/",
+          "note": "PyPI 最近可见版本为 2.0.0，上传日期为 2024-12-03。"
+        }
+      ]
+    },
+    {
+      "tool_id": "readability_lxml",
+      "name": "readability-lxml",
+      "kind": "python_library",
+      "license": "Apache-2.0",
+      "status": "candidate",
+      "integration_priority": "medium",
+      "fit_score": 7,
+      "primary_use_cases": [
+        "fallback_main_content_extraction",
+        "html_summary_cleanup"
+      ],
+      "strengths": [
+        "输入简单，适合对单页 HTML 做主正文提取",
+        "集成成本低，可作为 Trafilatura 的降级/对照抽取器"
+      ],
+      "limits": [
+        "偏单页提取，不负责抓取、登录和批处理编排",
+        "输出结构相对简单，更适合做 fallback"
+      ],
+      "install": [
+        "pip install readability-lxml"
+      ],
+      "current_recommendation": "作为二级抽取器保留，用于对单页 HTML 做兜底提取",
+      "official_sources": [
+        {
+          "url": "https://pypi.org/project/readability-lxml/",
+          "note": "PyPI 页面说明它用于从 HTML 文档提取和清洗主正文与标题，最近可见版本为 0.8.4.1（2025-05-03）。"
+        }
+      ]
+    },
+    {
+      "tool_id": "playwright_python",
+      "name": "Playwright Python",
+      "kind": "browser_automation_library",
+      "license": "Apache-2.0",
+      "status": "candidate",
+      "integration_priority": "high",
+      "fit_score": 10,
+      "primary_use_cases": [
+        "authenticated_reader_capture",
+        "dynamic_page_rendering",
+        "cookie_and_storage_persistence",
+        "recorded_login_flow"
+      ],
+      "strengths": [
+        "官方支持把登录态保存到文件并复用",
+        "支持 codegen 录制登录和交互流程",
+        "适合拿到认证后的章节 HTML，再交给导入脚本或正文抽取器处理"
+      ],
+      "limits": [
+        "要安装浏览器运行时，环境成本高于纯 HTML 提取器",
+        "需要自己实现章节导航、HTML 落盘和重试逻辑"
+      ],
+      "install": [
+        "pip install playwright",
+        "playwright install"
+      ],
+      "current_recommendation": "作为官方站点、登录站点和动态阅读页的首选浏览器自动化底座",
+      "official_sources": [
+        {
+          "url": "https://playwright.dev/python/docs/library",
+          "note": "官方文档给出了 Python 安装方式：pip install playwright，随后 playwright install。"
+        },
+        {
+          "url": "https://playwright.dev/python/docs/auth",
+          "note": "官方文档说明可将 cookies、local storage、IndexedDB 的认证状态保存到 state.json 并复用。"
+        },
+        {
+          "url": "https://playwright.dev/python/docs/codegen",
+          "note": "官方文档说明 codegen 支持 --save-storage，用于录制登录后保存认证状态。"
+        }
+      ]
+    },
+    {
+      "tool_id": "singlefile",
+      "name": "SingleFile",
+      "kind": "browser_extension_and_cli",
+      "license": "AGPL-3.0",
+      "status": "candidate",
+      "integration_priority": "high",
+      "fit_score": 8,
+      "primary_use_cases": [
+        "manual_browser_snapshot",
+        "saved_html_archival",
+        "human_in_loop_capture"
+      ],
+      "strengths": [
+        "可以把完整网页保存成单个 HTML 文件",
+        "支持浏览器扩展，也有 CLI",
+        "非常适合人工先打开正版章节，再离线导入项目"
+      ],
+      "limits": [
+        "默认是人工主导，不是直接的批量抓取编排器",
+        "许可证是 AGPL-3.0，二次集成时要注意边界"
+      ],
+      "install": [
+        "浏览器扩展安装 SingleFile",
+        "或使用 SingleFile CLI"
+      ],
+      "current_recommendation": "作为最稳的人机协同采集方式，优先服务正版阅读页保存 HTML",
+      "official_sources": [
+        {
+          "url": "https://github.com/gildas-lormeau/SingleFile",
+          "note": "官方仓库说明它可将完整网页保存为单个 HTML 文件，并同时提供 Web Extension 和 CLI。"
+        }
+      ]
+    },
+    {
+      "tool_id": "browser_use",
+      "name": "browser-use",
+      "kind": "agentic_browser_automation_framework",
+      "license": "MIT",
+      "status": "candidate",
+      "integration_priority": "medium",
+      "fit_score": 6,
+      "primary_use_cases": [
+        "human_in_loop_browser_tasks",
+        "real_browser_profile_reuse",
+        "agent_driven_navigation"
+      ],
+      "strengths": [
+        "支持复用真实浏览器 profile 和已保存登录态",
+        "适合需要人机协同、验证码处理或复杂站内导航的场景"
+      ],
+      "limits": [
+        "偏 AI agent 编排，作为原文采集底座会比 Playwright 更重",
+        "更适合处理复杂交互，不适合当首选静态提取器"
+      ],
+      "install": [
+        "uv add browser-use"
+      ],
+      "current_recommendation": "保留为复杂站点和人机协同场景的扩展选项，不作为第一实现优先级",
+      "official_sources": [
+        {
+          "url": "https://github.com/browser-use/browser-use",
+          "note": "官方仓库说明它是让 AI agent 可访问网站的浏览器自动化框架，并给出 Python 安装和 quickstart。"
+        },
+        {
+          "url": "https://github.com/browser-use/browser-use",
+          "note": "官方 FAQ 说明可复用真实浏览器 profile 和保存的登录状态。"
+        }
+      ]
+    }
+  ],
+  "internal_capabilities": [
+    {
+      "tool_id": "collect_source_text_internal",
+      "name": "collect_source_text.py",
+      "kind": "project_script",
+      "path": "scripts/collect_source_text.py",
+      "status": "implemented",
+      "supports": [
+        "txt",
+        "md",
+        "json",
+        "html",
+        "url_manifest",
+        "toc_page",
+        "header_file",
+        "cookie_file",
+        "saved_html_import"
+      ],
+      "persistence_targets": [
+        "adaptations/<pack>/source/chapters",
+        "adaptations/<pack>/source/source_manifest.json",
+        "adaptations/<pack>/reports/source_collection_report.md"
+      ],
+      "current_role": "统一把外部获取结果落成项目可消费的章节源目录"
+    },
+    {
+      "tool_id": "generate_chapter_briefs_internal",
+      "name": "generate_chapter_briefs.py",
+      "kind": "project_script",
+      "path": "scripts/generate_chapter_briefs.py",
+      "status": "implemented",
+      "supports": [
+        "source/chapters priority input",
+        "ark text model",
+        "batch generation",
+        "brief_generation_report"
+      ],
+      "current_role": "优先消费 source/chapters 中的逐章原文，生成适配摘要"
+    },
+    {
+      "tool_id": "playwright_source_capture_internal",
+      "name": "playwright_source_capture.py",
+      "kind": "project_script",
+      "path": "scripts/playwright_source_capture.py",
+      "status": "implemented",
+      "supports": [
+        "manual_login_capture",
+        "storage_state_persistence",
+        "session_storage_persistence",
+        "url_manifest_capture",
+        "html_batch_export",
+        "capture_manifest",
+        "capture_report"
+      ],
+      "persistence_targets": [
+        "data/source_sessions/<pack>/playwright_auth.json",
+        "data/source_sessions/<pack>/playwright_session_storage.json",
+        "adaptations/<pack>/source/incoming/playwright_html",
+        "adaptations/<pack>/source/incoming/playwright_capture_manifest.json",
+        "adaptations/<pack>/reports/playwright_capture_report.md"
+      ],
+      "current_role": "为登录后阅读页保存认证状态，并批量导出章节 HTML 给原文导入链路使用"
+    },
+    {
+      "tool_id": "build_source_url_manifest_internal",
+      "name": "build_source_url_manifest.py",
+      "kind": "project_script",
+      "path": "scripts/build_source_url_manifest.py",
+      "status": "implemented",
+      "supports": [
+        "chapter_briefs_to_skeleton",
+        "saved_toc_html_parsing",
+        "url_manifest_merge",
+        "incoming_source_urls_output"
+      ],
+      "persistence_targets": [
+        "adaptations/<pack>/source/incoming/source_urls.json"
+      ],
+      "current_role": "把章节骨架和保存下来的目录页 HTML 转成 Playwright 可直接使用的 URL 清单"
+    },
+    {
+      "tool_id": "run_source_ingestion_pipeline_internal",
+      "name": "run_source_ingestion_pipeline.py",
+      "kind": "project_script",
+      "path": "scripts/run_source_ingestion_pipeline.py",
+      "status": "implemented",
+      "supports": [
+        "toc_html_to_manifest",
+        "playwright_capture_orchestration",
+        "saved_html_import_orchestration",
+        "brief_regeneration",
+        "pipeline_snapshot",
+        "pipeline_report"
+      ],
+      "persistence_targets": [
+        "adaptations/<pack>/source/incoming/source_pipeline_snapshot.json",
+        "adaptations/<pack>/reports/source_pipeline_report.md"
+      ],
+      "current_role": "把目录页解析、Playwright 抓取、原文导入和摘要生成收拢成一条可重复执行的流水线入口"
+    }
+  ],
+  "recommended_stacks": [
+    {
+      "scenario_id": "static_public_pages",
+      "label": "静态公开正文页",
+      "recommended_tool_ids": [
+        "trafilatura",
+        "collect_source_text_internal"
+      ],
+      "why": "正文提取和批量处理效率高，接入成本低。"
+    },
+    {
+      "scenario_id": "authenticated_official_reader",
+      "label": "登录后官方阅读页",
+      "recommended_tool_ids": [
+        "playwright_python",
+        "build_source_url_manifest_internal",
+        "playwright_source_capture_internal",
+        "collect_source_text_internal",
+        "run_source_ingestion_pipeline_internal"
+      ],
+      "why": "先保存认证状态，再用一键流水线串联目录页解析、抓取、导入和摘要生成。"
+    },
+    {
+      "scenario_id": "manual_saved_html",
+      "label": "人工先打开页面再保存 HTML",
+      "recommended_tool_ids": [
+        "singlefile",
+        "collect_source_text_internal"
+      ],
+      "why": "最稳，最贴合正版阅读平台的人机校验现实。"
+    },
+    {
+      "scenario_id": "complex_human_in_loop_site",
+      "label": "复杂站点与人机协同",
+      "recommended_tool_ids": [
+        "browser_use",
+        "singlefile",
+        "collect_source_text_internal"
+      ],
+      "why": "适合需要人工介入、验证码或复杂站内跳转的站点。"
+    }
+  ],
+  "expansion_backlog": [
+    {
+      "capability_id": "playwright_auth_capture",
+      "status": "implemented",
+      "description": "已新增脚本保存 Playwright storage_state、可选 sessionStorage，并批量导出章节 HTML。"
+    },
+    {
+      "capability_id": "trafilatura_adapter",
+      "status": "proposed",
+      "description": "新增项目内适配器，把 raw HTML 自动清洗成 markdown/json，并回填到 source/chapters。"
+    },
+    {
+      "capability_id": "source_tool_selector",
+      "status": "proposed",
+      "description": "根据站点特征和认证需求，自动从工具目录中选择推荐方案。"
+    }
+  ]
+}

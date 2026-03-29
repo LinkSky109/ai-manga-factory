@@ -1,0 +1,11 @@
+{
+  "login_url": "https://www.qidian.com/login",
+  "browser": "chromium",
+  "wait_until": "domcontentloaded",
+  "wait_selector": "body",
+  "wait_for_timeout_ms": 1500,
+  "url_manifest": "incoming/source_urls.json",
+  "header_file": "incoming/request_headers.json",
+  "cookie_file": "incoming/request_cookies.json",
+  "save_screenshots": false
+}

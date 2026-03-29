@@ -1,0 +1,18 @@
+[
+  {
+    "chapter": 1,
+    "title": "第1章",
+    "catalog_title": "第1章 示例标题",
+    "match_aliases": [
+      "第1章 示例标题",
+      "示例标题"
+    ],
+    "match_keywords": [
+      "示例标题"
+    ],
+    "url": "https://example.com/chapter-1",
+    "wait_selector": "body",
+    "content_selector": "article",
+    "title_selector": "h1"
+  }
+]

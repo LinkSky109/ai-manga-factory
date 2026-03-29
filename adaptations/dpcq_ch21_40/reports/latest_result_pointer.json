@@ -1,0 +1,20 @@
+{
+  "pack_name": "dpcq_ch21_40",
+  "job_id": 18,
+  "project_name": "dpcq-ch21-40",
+  "capability_id": "manga",
+  "status": "completed",
+  "created_at": "2026-03-19T05:55:20.390618+00:00",
+  "updated_at": "2026-03-19T07:11:15.120416+00:00",
+  "validation_status": "PASS",
+  "validation_passed": 253,
+  "validation_total": 253,
+  "source": "pointer",
+  "artifact_summary_url": "/artifacts/job_18/result_summary.md",
+  "artifact_validation_url": "/artifacts/job_18/validation_report.md",
+  "artifact_snapshot_url": "/artifacts/job_18/result_snapshot.json",
+  "pack_summary_url": "/adaptation-files/dpcq_ch21_40/reports/job_18_summary.md",
+  "pack_validation_url": "/adaptation-files/dpcq_ch21_40/reports/job_18_validation.md",
+  "shared_summary_url": "/adaptation-files/dpcq_ch21_40/reports/latest_result.md",
+  "shared_validation_url": "/adaptation-files/dpcq_ch21_40/reports/latest_validation.md"
+}

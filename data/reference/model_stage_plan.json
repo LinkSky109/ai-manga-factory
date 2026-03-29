@@ -1,0 +1,134 @@
+{
+  "updated_at": "2026-03-19T18:05:00+08:00",
+  "project": "ai-manga-factory",
+  "strategy": {
+    "name": "production-cost-effective",
+    "description": "当前生产基线：文本摘要优先用 2.0 Lite，模型分镜精修用 2.0 Pro，角色图用 Seedream 5.0，批量关键帧用 Seedream 5.0 Lite，视频仍以 Seedance 1.5 Pro 为主，等待 2.0 API 正式 GA。"
+  },
+  "pipeline": [
+    {
+      "stage": "原文接入",
+      "entrypoints": [
+        "scripts/collect_source_text.py",
+        "scripts/playwright_source_capture.py",
+        "scripts/capture_cdp_chapters.py"
+      ],
+      "uses_model": false,
+      "current_default": null,
+      "fallbacks": [],
+      "cost_effectiveness": "最高",
+      "coding_plan_pro_fit": "高",
+      "notes": "主要是抓取、清洗、解析和结构化，不依赖内容生成模型。Coding Plan Pro 更适合做这部分脚本和自动化。"
+    },
+    {
+      "stage": "章节摘要生成",
+      "entrypoints": [
+        "scripts/generate_chapter_briefs.py"
+      ],
+      "uses_model": true,
+      "current_default": "doubao-seed-2-0-lite-260215",
+      "fallbacks": [
+        "doubao-seed-2-0-mini-260215",
+        "doubao-seed-1-6-251015",
+        "doubao-seed-1.6",
+        "doubao-seed-1.6-flash"
+      ],
+      "cost_effectiveness": "高",
+      "coding_plan_pro_fit": "低",
+      "notes": "摘要是高频批量任务，优先用 Lite 控成本；遇到复杂章节可手动升到 2.0 Pro。"
+    },
+    {
+      "stage": "模型分镜精修",
+      "entrypoints": [
+        "modules/manga/chapter_factory.py::_generate_storyboard"
+      ],
+      "uses_model": true,
+      "current_default": "doubao-seed-2-0-pro-260215",
+      "fallbacks": [
+        "doubao-seed-2-0-lite-260215",
+        "doubao-seed-2-0-mini-260215",
+        "doubao-seed-1-6-251015",
+        "doubao-seed-1.6",
+        "doubao-seed-1.6-flash"
+      ],
+      "cost_effectiveness": "中高",
+      "coding_plan_pro_fit": "低",
+      "notes": "这一步更吃世界观一致性、角色动机和镜头语言，默认用 Pro。只有在 use_model_storyboard=true 时才触发。"
+    },
+    {
+      "stage": "主角色图",
+      "entrypoints": [
+        "modules/manga/chapter_factory.py::_write_lead_character"
+      ],
+      "uses_model": true,
+      "current_default": "doubao-seedream-5-0-260128",
+      "fallbacks": [
+        "doubao-seedream-5-0-lite-260128",
+        "doubao-seedream-4-5-251128",
+        "Doubao-Seedream-4.5",
+        "doubao-seedream-4-0-250828"
+      ],
+      "cost_effectiveness": "中",
+      "coding_plan_pro_fit": "无",
+      "notes": "角色脸和美术统一性重要，默认用 5.0。"
+    },
+    {
+      "stage": "章节关键帧",
+      "entrypoints": [
+        "modules/manga/chapter_factory.py::_generate_keyframes"
+      ],
+      "uses_model": true,
+      "current_default": "doubao-seedream-5-0-lite-260128",
+      "fallbacks": [
+        "doubao-seedream-4-5-251128",
+        "Doubao-Seedream-4.5",
+        "doubao-seedream-4-0-250828"
+      ],
+      "cost_effectiveness": "高",
+      "coding_plan_pro_fit": "无",
+      "notes": "关键帧是批量高频任务，默认用 5.0 Lite 控成本；宣传图或名场面可单独升 5.0。"
+    },
+    {
+      "stage": "章节视频与整包视频",
+      "entrypoints": [
+        "modules/manga/chapter_factory.py::_render_chapter_video",
+        "modules/manga/chapter_factory.py::_concat_videos"
+      ],
+      "uses_model": false,
+      "current_default": "local-composition",
+      "fallbacks": [],
+      "cost_effectiveness": "高",
+      "coding_plan_pro_fit": "无",
+      "notes": "当前主链是本地合成视频，不调用 Ark 视频模型。配置里保留视频模型是为了后续接入外部视频 API。"
+    },
+    {
+      "stage": "未来外部视频生成",
+      "entrypoints": [
+        "shared/providers/ark.py::generate_video_to_file"
+      ],
+      "uses_model": true,
+      "current_default": "doubao-seedance-1-5-pro-251215",
+      "fallbacks": [
+        "doubao-seedance-1-0-pro-250528",
+        "Doubao-Seedance-1.5-pro"
+      ],
+      "cost_effectiveness": "待验证",
+      "coding_plan_pro_fit": "无",
+      "notes": "当前保留 1.5 Pro 作为 API 基线。用户要求：一旦 Doubao-Seedance-2.0 官方 API 正式上线，即提升为视频主模型。"
+    },
+    {
+      "stage": "工厂研发与脚本维护",
+      "entrypoints": [
+        "scripts/",
+        "backend/",
+        "frontend/"
+      ],
+      "uses_model": true,
+      "current_default": "Coding Plan Pro",
+      "fallbacks": [],
+      "cost_effectiveness": "最高",
+      "coding_plan_pro_fit": "最高",
+      "notes": "适用于写脚本、修流程、改前端、接 API、做解析器和自动化，不用于替代漫剧内容主模型。"
+    }
+  ]
+}

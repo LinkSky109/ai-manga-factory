@@ -1,0 +1,219 @@
+{
+  "source": "C:\\Users\\Administrator\\Downloads\\storyboard_ep1_timing_adjusted.xlsx",
+  "target_duration_seconds": 95.7,
+  "target_duration_range": [
+    90.0,
+    120.0
+  ],
+  "group_count": 6,
+  "group_durations": [
+    16.5,
+    16.6,
+    15.6,
+    15.5,
+    17.0,
+    14.5
+  ],
+  "group_beats": [
+    "开场钩子",
+    "关系建立",
+    "冲突升级",
+    "高潮前停顿",
+    "高潮",
+    "尾钩"
+  ],
+  "group_style_blocks": [
+    {
+      "group": 1,
+      "beat": "开场钩子",
+      "focus": "环境建场、群像期待、目标人物未出场先造势",
+      "size_candidates": [
+        "中近景",
+        "近景",
+        "近特写",
+        "大全景"
+      ],
+      "movement_candidates": [
+        "航拍俯拍+缓慢下摇",
+        "横向平移掠镜",
+        "微推",
+        "切入定镜"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "环境声先行，先造世界再给人物",
+      "group_name": "第1组",
+      "reference_shot_count": 10
+    },
+    {
+      "group": 2,
+      "beat": "关系建立",
+      "focus": "人物关系、信息补充、视角切换、把目标和处境交代清楚",
+      "size_candidates": [
+        "中近景",
+        "近景",
+        "中景",
+        "多景别蒙太奇"
+      ],
+      "movement_candidates": [
+        "定镜",
+        "跳切+叠化+书页闪回",
+        "切回群像",
+        "快推"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "对白和环境音并存，建立叙事基线",
+      "group_name": "第2组",
+      "reference_shot_count": 10
+    },
+    {
+      "group": 3,
+      "beat": "冲突升级",
+      "focus": "正反打、规则解释、局势升级、把观众推进冲突中心",
+      "size_candidates": [
+        "中近景",
+        "近特写",
+        "双人中景",
+        "插入特写"
+      ],
+      "movement_candidates": [
+        "微推",
+        "定镜",
+        "HUD叠加+轻震",
+        "突推"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "对白驱动，辅以重点音效",
+      "group_name": "第3组",
+      "reference_shot_count": 10
+    },
+    {
+      "group": 4,
+      "beat": "高潮前停顿",
+      "focus": "情绪压缩、关键判断、爆发前的短暂停顿",
+      "size_candidates": [
+        "中景",
+        "全景",
+        "群像中景",
+        "正反打特写"
+      ],
+      "movement_candidates": [
+        "突切+抬镜",
+        "环绕半圈",
+        "插切群像反应",
+        "缓推到极近"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "收窄环境，给情绪留压强",
+      "group_name": "第4组",
+      "reference_shot_count": 10
+    },
+    {
+      "group": 5,
+      "beat": "高潮",
+      "focus": "关键场面爆发、情绪兑现、名台词或动作爆点落地",
+      "size_candidates": [
+        "近景",
+        "中近景",
+        "特写",
+        "双人近景"
+      ],
+      "movement_candidates": [
+        "插入",
+        "慢推",
+        "正拍微推",
+        "反打定格"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "动作音效、配乐和对白共同推高潮",
+      "group_name": "第5组",
+      "reference_shot_count": 10
+    },
+    {
+      "group": 6,
+      "beat": "尾钩",
+      "focus": "余波、反应、悬念停顿、下一章钩子",
+      "size_candidates": [
+        "中景",
+        "近特写",
+        "插入特写",
+        "近景"
+      ],
+      "movement_candidates": [
+        "环境停顿式定镜",
+        "声音先行+快速切",
+        "反应切",
+        "甩镜跟拍"
+      ],
+      "dialogue_density": "medium",
+      "audio_density": "high",
+      "audio_focus": "先给尾音，再给信息钩子",
+      "group_name": "第6组",
+      "reference_shot_count": 10
+    }
+  ],
+  "default_shot_count": 10,
+  "default_keyframe_count": 4,
+  "required_fields": [
+    "分组",
+    "15秒段",
+    "镜头号",
+    "时长(s)",
+    "起始时间",
+    "结束时间",
+    "场景/时间",
+    "镜头景别",
+    "镜头运动",
+    "画面内容",
+    "人物动作/神态",
+    "台词对白",
+    "角色",
+    "音效"
+  ],
+  "chapter_requirements": {
+    "storyboard_files": [
+      "storyboard.json",
+      "storyboard.csv",
+      "storyboard.xlsx"
+    ],
+    "video_files": [
+      "preview/chapter_preview.mp4",
+      "delivery/chapter_final_cut.mp4"
+    ],
+    "qa_files": [
+      "qa/qa_report.md",
+      "qa/qa_snapshot.json"
+    ],
+    "audio_files": [
+      "audio/audio_plan.json",
+      "audio/voiceover.mp3",
+      "audio/ambience.wav"
+    ]
+  },
+  "notes": [
+    "单章成片总时长控制在 90-120 秒。",
+    "必须保留分组、镜头时长、景别、运镜、对白、角色和音效字段。",
+    "允许关键帧少于镜头数，但不允许章节没有完整分镜表和章节视频。"
+  ],
+  "reference_group_shot_counts": [
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ],
+  "reference_total_shot_count": 60,
+  "default_group_shot_distribution": [
+    2,
+    2,
+    2,
+    1,
+    2,
+    1
+  ]
+}

@@ -1,0 +1,5 @@
+# 可选：原文获取与认证抓取工具
+
+playwright
+trafilatura
+readability-lxml

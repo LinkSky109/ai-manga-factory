@@ -1,0 +1,112 @@
+# Job 11 结果沉淀
+
+- 项目名: dpcq-ch1-20
+- 能力: manga
+- 状态: completed
+- 适配包: dpcq_ch1_20
+- 原作: 斗破苍穹
+- 章节范围: 1-20
+- 创建时间: 2026-03-18T21:40:04.360604+00:00
+- 更新时间: 2026-03-18T21:50:50.027243+00:00
+
+## 执行摘要
+已按章节工厂模式完成《斗破苍穹》1-20 的漫剧交付，共 20 章。每章均输出分镜 JSON/CSV/XLSX、音频方案、章节预览视频、章节交付视频与 QA 报告。真图数量 0，输出视频数量 42。
+
+## 自动校验
+- 结论: PASS
+- 通过: 253/253
+
+## 关键产物
+- job_11/research.md
+- job_11/screenplay.md
+- job_11/art_direction.md
+- job_11/prompts.json
+- job_11/storyboard/storyboard.json
+- job_11/chapters_index.json
+- job_11/qa_overview.md
+- job_11/characters/lead_character.png
+- job_11/preview/index.html
+- job_11/preview/preview.gif
+- job_11/preview/preview.mp4
+- job_11/delivery/final_cut.mp4
+- job_11/manifest.json
+- job_11/chapters/chapter_01/preview/chapter_preview.mp4
+- job_11/chapters/chapter_01/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_01/qa/qa_report.md
+- job_11/chapters/chapter_02/preview/chapter_preview.mp4
+- job_11/chapters/chapter_02/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_02/qa/qa_report.md
+- job_11/chapters/chapter_03/preview/chapter_preview.mp4
+- job_11/chapters/chapter_03/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_03/qa/qa_report.md
+- job_11/chapters/chapter_04/preview/chapter_preview.mp4
+- job_11/chapters/chapter_04/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_04/qa/qa_report.md
+- job_11/chapters/chapter_05/preview/chapter_preview.mp4
+- job_11/chapters/chapter_05/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_05/qa/qa_report.md
+- job_11/chapters/chapter_06/preview/chapter_preview.mp4
+- job_11/chapters/chapter_06/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_06/qa/qa_report.md
+- job_11/chapters/chapter_07/preview/chapter_preview.mp4
+- job_11/chapters/chapter_07/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_07/qa/qa_report.md
+- job_11/chapters/chapter_08/preview/chapter_preview.mp4
+- job_11/chapters/chapter_08/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_08/qa/qa_report.md
+- job_11/chapters/chapter_09/preview/chapter_preview.mp4
+- job_11/chapters/chapter_09/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_09/qa/qa_report.md
+- job_11/chapters/chapter_10/preview/chapter_preview.mp4
+- job_11/chapters/chapter_10/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_10/qa/qa_report.md
+- job_11/chapters/chapter_11/preview/chapter_preview.mp4
+- job_11/chapters/chapter_11/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_11/qa/qa_report.md
+- job_11/chapters/chapter_12/preview/chapter_preview.mp4
+- job_11/chapters/chapter_12/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_12/qa/qa_report.md
+- job_11/chapters/chapter_13/preview/chapter_preview.mp4
+- job_11/chapters/chapter_13/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_13/qa/qa_report.md
+- job_11/chapters/chapter_14/preview/chapter_preview.mp4
+- job_11/chapters/chapter_14/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_14/qa/qa_report.md
+- job_11/chapters/chapter_15/preview/chapter_preview.mp4
+- job_11/chapters/chapter_15/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_15/qa/qa_report.md
+- job_11/chapters/chapter_16/preview/chapter_preview.mp4
+- job_11/chapters/chapter_16/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_16/qa/qa_report.md
+- job_11/chapters/chapter_17/preview/chapter_preview.mp4
+- job_11/chapters/chapter_17/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_17/qa/qa_report.md
+- job_11/chapters/chapter_18/preview/chapter_preview.mp4
+- job_11/chapters/chapter_18/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_18/qa/qa_report.md
+- job_11/chapters/chapter_19/preview/chapter_preview.mp4
+- job_11/chapters/chapter_19/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_19/qa/qa_report.md
+- job_11/chapters/chapter_20/preview/chapter_preview.mp4
+- job_11/chapters/chapter_20/delivery/chapter_final_cut.mp4
+- job_11/chapters/chapter_20/qa/qa_report.md
+- job_11/storyboard/scene_01.png
+- job_11/storyboard/scene_02.png
+- job_11/storyboard/scene_03.png
+- job_11/storyboard/scene_04.png
+- job_11/storyboard/scene_05.png
+- job_11/storyboard/scene_06.png
+- job_11/storyboard/scene_07.png
+- job_11/storyboard/scene_08.png
+- job_11/storyboard/scene_09.png
+- job_11/storyboard/scene_10.png
+- job_11/storyboard/scene_11.png
+- job_11/storyboard/scene_12.png
+- job_11/storyboard/scene_13.png
+- job_11/storyboard/scene_14.png
+- job_11/storyboard/scene_15.png
+- job_11/storyboard/scene_16.png
+- job_11/storyboard/scene_17.png
+- job_11/storyboard/scene_18.png
+- job_11/storyboard/scene_19.png
+- job_11/storyboard/scene_20.png

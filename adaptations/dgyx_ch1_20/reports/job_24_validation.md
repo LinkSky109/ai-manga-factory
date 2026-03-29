@@ -1,0 +1,431 @@
+# Job 24 自动校验报告
+
+- 状态: failed
+- 校验结论: FAIL
+- 通过: 155/424
+
+## 详情
+- [PASS] research.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/research.md
+- [PASS] screenplay.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/screenplay.md
+- [PASS] art_direction.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/art_direction.md
+- [FAIL] prompts.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/prompts.json
+- [FAIL] manifest.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/manifest.json
+- [FAIL] chapters_index.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters_index.json
+- [FAIL] qa_overview.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/qa_overview.md
+- [PASS] characters/lead_character.png -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/characters/lead_character.png
+- [FAIL] storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/storyboard/storyboard.json
+- [FAIL] preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/preview/index.html
+- [FAIL] preview/preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/preview/preview.mp4
+- [FAIL] delivery/final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/delivery/final_cut.mp4
+- [PASS] chapters/chapter_01/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [PASS] chapters/chapter_01/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.csv
+- [PASS] chapters/chapter_01/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_01/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/video/video_plan.json
+- [PASS] chapters/chapter_01/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [PASS] chapters/chapter_01/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/narration_script.txt
+- [FAIL] chapters/chapter_01/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/voice_script.txt
+- [PASS] chapters/chapter_01/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/voiceover.mp3
+- [PASS] chapters/chapter_01/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/ambience.wav
+- [PASS] chapters/chapter_01/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/preview/index.html
+- [PASS] chapters/chapter_01/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_01/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_01/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/qa/qa_report.md
+- [PASS] chapters/chapter_01/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/qa/qa_snapshot.json
+- [PASS] chapters/chapter_02/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [PASS] chapters/chapter_02/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.csv
+- [PASS] chapters/chapter_02/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_02/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/video/video_plan.json
+- [PASS] chapters/chapter_02/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [PASS] chapters/chapter_02/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/narration_script.txt
+- [FAIL] chapters/chapter_02/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/voice_script.txt
+- [PASS] chapters/chapter_02/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/voiceover.mp3
+- [PASS] chapters/chapter_02/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/ambience.wav
+- [PASS] chapters/chapter_02/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/preview/index.html
+- [PASS] chapters/chapter_02/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_02/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_02/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/qa/qa_report.md
+- [PASS] chapters/chapter_02/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/qa/qa_snapshot.json
+- [PASS] chapters/chapter_03/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [PASS] chapters/chapter_03/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.csv
+- [PASS] chapters/chapter_03/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_03/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/video/video_plan.json
+- [PASS] chapters/chapter_03/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [PASS] chapters/chapter_03/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/narration_script.txt
+- [FAIL] chapters/chapter_03/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/voice_script.txt
+- [PASS] chapters/chapter_03/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/voiceover.mp3
+- [PASS] chapters/chapter_03/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/ambience.wav
+- [PASS] chapters/chapter_03/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/preview/index.html
+- [PASS] chapters/chapter_03/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_03/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_03/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/qa/qa_report.md
+- [PASS] chapters/chapter_03/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/qa/qa_snapshot.json
+- [PASS] chapters/chapter_04/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [PASS] chapters/chapter_04/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.csv
+- [PASS] chapters/chapter_04/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_04/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/video/video_plan.json
+- [PASS] chapters/chapter_04/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [PASS] chapters/chapter_04/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/narration_script.txt
+- [FAIL] chapters/chapter_04/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/voice_script.txt
+- [PASS] chapters/chapter_04/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/voiceover.mp3
+- [PASS] chapters/chapter_04/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/ambience.wav
+- [PASS] chapters/chapter_04/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/preview/index.html
+- [PASS] chapters/chapter_04/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_04/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_04/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/qa/qa_report.md
+- [PASS] chapters/chapter_04/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/qa/qa_snapshot.json
+- [PASS] chapters/chapter_05/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [PASS] chapters/chapter_05/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.csv
+- [PASS] chapters/chapter_05/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_05/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/video/video_plan.json
+- [PASS] chapters/chapter_05/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [PASS] chapters/chapter_05/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/narration_script.txt
+- [FAIL] chapters/chapter_05/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/voice_script.txt
+- [PASS] chapters/chapter_05/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/voiceover.mp3
+- [PASS] chapters/chapter_05/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/ambience.wav
+- [PASS] chapters/chapter_05/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/preview/index.html
+- [PASS] chapters/chapter_05/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_05/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_05/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/qa/qa_report.md
+- [PASS] chapters/chapter_05/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/qa/qa_snapshot.json
+- [PASS] chapters/chapter_06/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [PASS] chapters/chapter_06/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.csv
+- [PASS] chapters/chapter_06/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_06/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/video/video_plan.json
+- [PASS] chapters/chapter_06/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [PASS] chapters/chapter_06/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/narration_script.txt
+- [FAIL] chapters/chapter_06/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/voice_script.txt
+- [PASS] chapters/chapter_06/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/voiceover.mp3
+- [PASS] chapters/chapter_06/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/ambience.wav
+- [PASS] chapters/chapter_06/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/preview/index.html
+- [PASS] chapters/chapter_06/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_06/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_06/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/qa/qa_report.md
+- [PASS] chapters/chapter_06/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/qa/qa_snapshot.json
+- [PASS] chapters/chapter_07/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [PASS] chapters/chapter_07/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.csv
+- [PASS] chapters/chapter_07/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_07/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/video/video_plan.json
+- [PASS] chapters/chapter_07/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [PASS] chapters/chapter_07/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/narration_script.txt
+- [FAIL] chapters/chapter_07/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/voice_script.txt
+- [PASS] chapters/chapter_07/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/voiceover.mp3
+- [PASS] chapters/chapter_07/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/ambience.wav
+- [PASS] chapters/chapter_07/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/preview/index.html
+- [PASS] chapters/chapter_07/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_07/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_07/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/qa/qa_report.md
+- [PASS] chapters/chapter_07/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/qa/qa_snapshot.json
+- [PASS] chapters/chapter_08/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [PASS] chapters/chapter_08/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.csv
+- [PASS] chapters/chapter_08/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_08/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/video/video_plan.json
+- [PASS] chapters/chapter_08/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [PASS] chapters/chapter_08/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/narration_script.txt
+- [FAIL] chapters/chapter_08/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/voice_script.txt
+- [PASS] chapters/chapter_08/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/voiceover.mp3
+- [PASS] chapters/chapter_08/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/ambience.wav
+- [PASS] chapters/chapter_08/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/preview/index.html
+- [PASS] chapters/chapter_08/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_08/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_08/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/qa/qa_report.md
+- [PASS] chapters/chapter_08/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/qa/qa_snapshot.json
+- [PASS] chapters/chapter_09/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [PASS] chapters/chapter_09/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.csv
+- [PASS] chapters/chapter_09/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_09/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/video/video_plan.json
+- [PASS] chapters/chapter_09/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [PASS] chapters/chapter_09/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/narration_script.txt
+- [FAIL] chapters/chapter_09/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/voice_script.txt
+- [PASS] chapters/chapter_09/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/voiceover.mp3
+- [PASS] chapters/chapter_09/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/ambience.wav
+- [PASS] chapters/chapter_09/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/preview/index.html
+- [PASS] chapters/chapter_09/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_09/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_09/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/qa/qa_report.md
+- [PASS] chapters/chapter_09/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/qa/qa_snapshot.json
+- [PASS] chapters/chapter_10/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [PASS] chapters/chapter_10/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.csv
+- [PASS] chapters/chapter_10/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_10/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/video/video_plan.json
+- [PASS] chapters/chapter_10/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [PASS] chapters/chapter_10/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/narration_script.txt
+- [FAIL] chapters/chapter_10/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/voice_script.txt
+- [PASS] chapters/chapter_10/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/voiceover.mp3
+- [PASS] chapters/chapter_10/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/ambience.wav
+- [PASS] chapters/chapter_10/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/preview/index.html
+- [PASS] chapters/chapter_10/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_10/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_10/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/qa/qa_report.md
+- [PASS] chapters/chapter_10/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/qa/qa_snapshot.json
+- [PASS] chapters/chapter_11/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [PASS] chapters/chapter_11/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.csv
+- [PASS] chapters/chapter_11/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_11/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/video/video_plan.json
+- [PASS] chapters/chapter_11/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [PASS] chapters/chapter_11/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/narration_script.txt
+- [FAIL] chapters/chapter_11/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/voice_script.txt
+- [PASS] chapters/chapter_11/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/voiceover.mp3
+- [PASS] chapters/chapter_11/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/ambience.wav
+- [PASS] chapters/chapter_11/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/preview/index.html
+- [PASS] chapters/chapter_11/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/preview/chapter_preview.mp4
+- [PASS] chapters/chapter_11/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/delivery/chapter_final_cut.mp4
+- [PASS] chapters/chapter_11/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/qa/qa_report.md
+- [PASS] chapters/chapter_11/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/qa/qa_snapshot.json
+- [PASS] chapters/chapter_12/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [PASS] chapters/chapter_12/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.csv
+- [PASS] chapters/chapter_12/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.xlsx
+- [PASS] chapters/chapter_12/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/video/video_plan.json
+- [PASS] chapters/chapter_12/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [PASS] chapters/chapter_12/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/narration_script.txt
+- [FAIL] chapters/chapter_12/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/voice_script.txt
+- [PASS] chapters/chapter_12/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/voiceover.mp3
+- [PASS] chapters/chapter_12/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/ambience.wav
+- [FAIL] chapters/chapter_12/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/preview/index.html
+- [FAIL] chapters/chapter_12/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_12/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_12/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/qa/qa_report.md
+- [FAIL] chapters/chapter_12/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_13/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/storyboard/storyboard.json
+- [FAIL] chapters/chapter_13/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_13/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_13/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/video/video_plan.json
+- [FAIL] chapters/chapter_13/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/audio/audio_plan.json
+- [FAIL] chapters/chapter_13/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/audio/narration_script.txt
+- [FAIL] chapters/chapter_13/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/audio/voice_script.txt
+- [FAIL] chapters/chapter_13/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/audio/voiceover.mp3
+- [FAIL] chapters/chapter_13/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/audio/ambience.wav
+- [FAIL] chapters/chapter_13/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/preview/index.html
+- [FAIL] chapters/chapter_13/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_13/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_13/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/qa/qa_report.md
+- [FAIL] chapters/chapter_13/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_13/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_14/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/storyboard/storyboard.json
+- [FAIL] chapters/chapter_14/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_14/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_14/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/video/video_plan.json
+- [FAIL] chapters/chapter_14/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/audio/audio_plan.json
+- [FAIL] chapters/chapter_14/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/audio/narration_script.txt
+- [FAIL] chapters/chapter_14/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/audio/voice_script.txt
+- [FAIL] chapters/chapter_14/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/audio/voiceover.mp3
+- [FAIL] chapters/chapter_14/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/audio/ambience.wav
+- [FAIL] chapters/chapter_14/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/preview/index.html
+- [FAIL] chapters/chapter_14/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_14/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_14/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/qa/qa_report.md
+- [FAIL] chapters/chapter_14/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_14/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_15/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/storyboard/storyboard.json
+- [FAIL] chapters/chapter_15/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_15/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_15/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/video/video_plan.json
+- [FAIL] chapters/chapter_15/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/audio/audio_plan.json
+- [FAIL] chapters/chapter_15/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/audio/narration_script.txt
+- [FAIL] chapters/chapter_15/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/audio/voice_script.txt
+- [FAIL] chapters/chapter_15/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/audio/voiceover.mp3
+- [FAIL] chapters/chapter_15/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/audio/ambience.wav
+- [FAIL] chapters/chapter_15/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/preview/index.html
+- [FAIL] chapters/chapter_15/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_15/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_15/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/qa/qa_report.md
+- [FAIL] chapters/chapter_15/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_15/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_16/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/storyboard/storyboard.json
+- [FAIL] chapters/chapter_16/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_16/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_16/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/video/video_plan.json
+- [FAIL] chapters/chapter_16/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/audio/audio_plan.json
+- [FAIL] chapters/chapter_16/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/audio/narration_script.txt
+- [FAIL] chapters/chapter_16/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/audio/voice_script.txt
+- [FAIL] chapters/chapter_16/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/audio/voiceover.mp3
+- [FAIL] chapters/chapter_16/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/audio/ambience.wav
+- [FAIL] chapters/chapter_16/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/preview/index.html
+- [FAIL] chapters/chapter_16/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_16/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_16/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/qa/qa_report.md
+- [FAIL] chapters/chapter_16/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_16/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_17/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/storyboard/storyboard.json
+- [FAIL] chapters/chapter_17/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_17/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_17/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/video/video_plan.json
+- [FAIL] chapters/chapter_17/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/audio/audio_plan.json
+- [FAIL] chapters/chapter_17/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/audio/narration_script.txt
+- [FAIL] chapters/chapter_17/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/audio/voice_script.txt
+- [FAIL] chapters/chapter_17/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/audio/voiceover.mp3
+- [FAIL] chapters/chapter_17/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/audio/ambience.wav
+- [FAIL] chapters/chapter_17/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/preview/index.html
+- [FAIL] chapters/chapter_17/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_17/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_17/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/qa/qa_report.md
+- [FAIL] chapters/chapter_17/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_17/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_18/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/storyboard/storyboard.json
+- [FAIL] chapters/chapter_18/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_18/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_18/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/video/video_plan.json
+- [FAIL] chapters/chapter_18/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/audio/audio_plan.json
+- [FAIL] chapters/chapter_18/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/audio/narration_script.txt
+- [FAIL] chapters/chapter_18/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/audio/voice_script.txt
+- [FAIL] chapters/chapter_18/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/audio/voiceover.mp3
+- [FAIL] chapters/chapter_18/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/audio/ambience.wav
+- [FAIL] chapters/chapter_18/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/preview/index.html
+- [FAIL] chapters/chapter_18/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_18/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_18/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/qa/qa_report.md
+- [FAIL] chapters/chapter_18/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_18/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_19/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/storyboard/storyboard.json
+- [FAIL] chapters/chapter_19/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_19/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_19/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/video/video_plan.json
+- [FAIL] chapters/chapter_19/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/audio/audio_plan.json
+- [FAIL] chapters/chapter_19/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/audio/narration_script.txt
+- [FAIL] chapters/chapter_19/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/audio/voice_script.txt
+- [FAIL] chapters/chapter_19/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/audio/voiceover.mp3
+- [FAIL] chapters/chapter_19/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/audio/ambience.wav
+- [FAIL] chapters/chapter_19/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/preview/index.html
+- [FAIL] chapters/chapter_19/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_19/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_19/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/qa/qa_report.md
+- [FAIL] chapters/chapter_19/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_19/qa/qa_snapshot.json
+- [FAIL] chapters/chapter_20/storyboard/storyboard.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/storyboard/storyboard.json
+- [FAIL] chapters/chapter_20/storyboard/storyboard.csv -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/storyboard/storyboard.csv
+- [FAIL] chapters/chapter_20/storyboard/storyboard.xlsx -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/storyboard/storyboard.xlsx
+- [FAIL] chapters/chapter_20/video/video_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/video/video_plan.json
+- [FAIL] chapters/chapter_20/audio/audio_plan.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/audio/audio_plan.json
+- [FAIL] chapters/chapter_20/audio/narration_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/audio/narration_script.txt
+- [FAIL] chapters/chapter_20/audio/voice_script.txt -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/audio/voice_script.txt
+- [FAIL] chapters/chapter_20/audio/voiceover.mp3 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/audio/voiceover.mp3
+- [FAIL] chapters/chapter_20/audio/ambience.wav -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/audio/ambience.wav
+- [FAIL] chapters/chapter_20/preview/index.html -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/preview/index.html
+- [FAIL] chapters/chapter_20/preview/chapter_preview.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/preview/chapter_preview.mp4
+- [FAIL] chapters/chapter_20/delivery/chapter_final_cut.mp4 -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/delivery/chapter_final_cut.mp4
+- [FAIL] chapters/chapter_20/qa/qa_report.md -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/qa/qa_report.md
+- [FAIL] chapters/chapter_20/qa/qa_snapshot.json -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_20/qa/qa_snapshot.json
+- [FAIL] chapter_01 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [FAIL] chapter_01 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [FAIL] chapter_01 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [FAIL] chapter_01 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [FAIL] chapter_01 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/storyboard/storyboard.json
+- [FAIL] chapter_01 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_01 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_01 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_01 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_01 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_01 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_01/audio/audio_plan.json
+- [FAIL] chapter_02 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [FAIL] chapter_02 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [FAIL] chapter_02 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [FAIL] chapter_02 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [FAIL] chapter_02 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/storyboard/storyboard.json
+- [FAIL] chapter_02 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_02 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_02 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_02 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_02 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_02 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_02/audio/audio_plan.json
+- [FAIL] chapter_03 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [FAIL] chapter_03 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [FAIL] chapter_03 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [FAIL] chapter_03 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [FAIL] chapter_03 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/storyboard/storyboard.json
+- [FAIL] chapter_03 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_03 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_03 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_03 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_03 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_03 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_03/audio/audio_plan.json
+- [FAIL] chapter_04 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [FAIL] chapter_04 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [FAIL] chapter_04 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [FAIL] chapter_04 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [FAIL] chapter_04 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/storyboard/storyboard.json
+- [FAIL] chapter_04 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_04 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_04 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_04 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_04 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_04 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_04/audio/audio_plan.json
+- [FAIL] chapter_05 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [FAIL] chapter_05 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [FAIL] chapter_05 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [FAIL] chapter_05 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [FAIL] chapter_05 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/storyboard/storyboard.json
+- [FAIL] chapter_05 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_05 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_05 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_05 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_05 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_05 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_05/audio/audio_plan.json
+- [FAIL] chapter_06 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [FAIL] chapter_06 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [FAIL] chapter_06 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [FAIL] chapter_06 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [FAIL] chapter_06 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/storyboard/storyboard.json
+- [FAIL] chapter_06 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_06 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_06 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_06 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_06 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_06 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_06/audio/audio_plan.json
+- [FAIL] chapter_07 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [FAIL] chapter_07 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [FAIL] chapter_07 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [FAIL] chapter_07 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [FAIL] chapter_07 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/storyboard/storyboard.json
+- [FAIL] chapter_07 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_07 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_07 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_07 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_07 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_07 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_07/audio/audio_plan.json
+- [FAIL] chapter_08 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [FAIL] chapter_08 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [FAIL] chapter_08 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [FAIL] chapter_08 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [FAIL] chapter_08 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/storyboard/storyboard.json
+- [FAIL] chapter_08 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_08 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_08 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_08 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_08 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_08 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_08/audio/audio_plan.json
+- [FAIL] chapter_09 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [FAIL] chapter_09 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [FAIL] chapter_09 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [FAIL] chapter_09 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [FAIL] chapter_09 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/storyboard/storyboard.json
+- [FAIL] chapter_09 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_09 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_09 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_09 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_09 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_09 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_09/audio/audio_plan.json
+- [FAIL] chapter_10 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [FAIL] chapter_10 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [FAIL] chapter_10 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [FAIL] chapter_10 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [FAIL] chapter_10 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/storyboard/storyboard.json
+- [FAIL] chapter_10 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_10 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_10 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_10 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_10 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_10 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_10/audio/audio_plan.json
+- [FAIL] chapter_11 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [FAIL] chapter_11 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [FAIL] chapter_11 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [FAIL] chapter_11 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [FAIL] chapter_11 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/storyboard/storyboard.json
+- [FAIL] chapter_11 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_11 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_11 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_11 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_11 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_11 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_11/audio/audio_plan.json
+- [FAIL] chapter_12 storyboard narration populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [FAIL] chapter_12 storyboard dialogue populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [FAIL] chapter_12 storyboard dialogue speakers varied -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [FAIL] chapter_12 storyboard audio design populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [FAIL] chapter_12 storyboard scene labels clean -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/storyboard/storyboard.json
+- [FAIL] chapter_12 audio cue sheet populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [FAIL] chapter_12 audio narration tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [FAIL] chapter_12 audio dialogue tracks populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [FAIL] chapter_12 audio voice script populated -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [FAIL] chapter_12 audio voice script has narration -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json
+- [FAIL] chapter_12 audio voice script has character dialogue -> C:/Users/Administrator/OneDrive/CodexRuntime/ai-manga-factory/artifacts/job_24/chapters/chapter_12/audio/audio_plan.json

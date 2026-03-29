@@ -1,0 +1,115 @@
+# Job 18 结果沉淀
+
+- 项目名: dpcq-ch21-40
+- 能力: manga
+- 状态: completed
+- 适配包: dpcq_ch21_40
+- 原作: 斗破苍穹
+- 章节范围: 21-40
+- 创建时间: 2026-03-19T05:55:20.390618+00:00
+- 更新时间: 2026-03-19T07:11:15.120416+00:00
+
+## 执行摘要
+已按章节工厂模式完成《斗破苍穹》21-40 的漫剧交付，共 20 章。每章均输出分镜 JSON/CSV/XLSX、音频方案、章节预览视频、章节交付视频与 QA 报告。真图数量 60，输出视频数量 42。 供应商备注：章节 21 关键帧回退：Ark image generation failed: Error code: 400 - {'error': {'code': 'OutputImageSensitiveContentDetected', 'message': 'The request failed because the output image may contain sensitive information. Request id: 0217738998649958e13156721812cf3aa873c08415dc3f43b0a07', 'param': '', 'type': ''}}, request_id: 20260319135744HxE3wiCTy9UCaB9aE3GU | 章节 22 分镜改用回退模板：Expecting ',' delimiter: line 185 column 19 (char 3261) | 章节 31 分镜改用回退模板：Expecting value: line 1 column 1 (char 0) | 章节 33 分镜改用回退模板：Expecting ',' delimiter: line 175 column 14 (char 3227) | 章节 38 分镜改用回退模板：Ark text generation failed: Error code: 403 - {'error': {'code': 'AccountOverdueError', 'message': 'The request failed because your account has an overdue balance. Request id: 021773903712703c63a6ac480f44318ff02bbee696f61108a148e', 'param': '', 'type': 'Forbidden'}}, request_id: 2026031915015244FWvB4wkHRwzvHFxJpc | 章节 39 分镜改用回退模板：Ark text generation failed: Error code: 403 - {'error': {'code': 'AccountOverdueError', 'message': 'The request failed because your account has an overdue balance. Request id: 02177390387994670efbf1cf5c1ae3d0b3f284807454d29797a1c', 'param': '', 'type': 'Forbidden'}}, request_id: 20260319150439fJpxWaOfoyQESYDl2K5L | 章节 40 分镜改用回退模板：Ark text generation failed: Error code: 403 - {'error': {'code': 'AccountOverdueError', 'message': 'The request failed because your account has an overdue balance. Request id: 021773904063433b060a07fba38d5479db0751ac158bec560fd91', 'param': '', 'type': 'Forbidden'}}, request_id: 20260319150742JHaI0PTYDElxCOpLKRrG
+
+## 自动校验
+- 结论: PASS
+- 通过: 253/253
+
+## 关键产物
+- job_18/research.md
+- job_18/screenplay.md
+- job_18/art_direction.md
+- job_18/prompts.json
+- job_18/storyboard/storyboard.json
+- job_18/chapters_index.json
+- job_18/qa_overview.md
+- job_18/characters/lead_character.png
+- job_18/preview/index.html
+- job_18/preview/preview.gif
+- job_18/preview/preview.mp4
+- job_18/delivery/final_cut.mp4
+- job_18/manifest.json
+- job_18/chapters/chapter_21/preview/chapter_preview.mp4
+- job_18/chapters/chapter_21/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_21/qa/qa_report.md
+- job_18/chapters/chapter_22/preview/chapter_preview.mp4
+- job_18/chapters/chapter_22/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_22/qa/qa_report.md
+- job_18/chapters/chapter_23/preview/chapter_preview.mp4
+- job_18/chapters/chapter_23/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_23/qa/qa_report.md
+- job_18/chapters/chapter_24/preview/chapter_preview.mp4
+- job_18/chapters/chapter_24/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_24/qa/qa_report.md
+- job_18/chapters/chapter_25/preview/chapter_preview.mp4
+- job_18/chapters/chapter_25/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_25/qa/qa_report.md
+- job_18/chapters/chapter_26/preview/chapter_preview.mp4
+- job_18/chapters/chapter_26/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_26/qa/qa_report.md
+- job_18/chapters/chapter_27/preview/chapter_preview.mp4
+- job_18/chapters/chapter_27/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_27/qa/qa_report.md
+- job_18/chapters/chapter_28/preview/chapter_preview.mp4
+- job_18/chapters/chapter_28/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_28/qa/qa_report.md
+- job_18/chapters/chapter_29/preview/chapter_preview.mp4
+- job_18/chapters/chapter_29/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_29/qa/qa_report.md
+- job_18/chapters/chapter_30/preview/chapter_preview.mp4
+- job_18/chapters/chapter_30/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_30/qa/qa_report.md
+- job_18/chapters/chapter_31/preview/chapter_preview.mp4
+- job_18/chapters/chapter_31/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_31/qa/qa_report.md
+- job_18/chapters/chapter_32/preview/chapter_preview.mp4
+- job_18/chapters/chapter_32/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_32/qa/qa_report.md
+- job_18/chapters/chapter_33/preview/chapter_preview.mp4
+- job_18/chapters/chapter_33/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_33/qa/qa_report.md
+- job_18/chapters/chapter_34/preview/chapter_preview.mp4
+- job_18/chapters/chapter_34/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_34/qa/qa_report.md
+- job_18/chapters/chapter_35/preview/chapter_preview.mp4
+- job_18/chapters/chapter_35/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_35/qa/qa_report.md
+- job_18/chapters/chapter_36/preview/chapter_preview.mp4
+- job_18/chapters/chapter_36/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_36/qa/qa_report.md
+- job_18/chapters/chapter_37/preview/chapter_preview.mp4
+- job_18/chapters/chapter_37/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_37/qa/qa_report.md
+- job_18/chapters/chapter_38/preview/chapter_preview.mp4
+- job_18/chapters/chapter_38/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_38/qa/qa_report.md
+- job_18/chapters/chapter_39/preview/chapter_preview.mp4
+- job_18/chapters/chapter_39/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_39/qa/qa_report.md
+- job_18/chapters/chapter_40/preview/chapter_preview.mp4
+- job_18/chapters/chapter_40/delivery/chapter_final_cut.mp4
+- job_18/chapters/chapter_40/qa/qa_report.md
+- job_18/storyboard/scene_01.png
+- job_18/storyboard/scene_02.png
+- job_18/storyboard/scene_03.png
+- job_18/storyboard/scene_04.png
+- job_18/storyboard/scene_05.png
+- job_18/storyboard/scene_06.png
+- job_18/storyboard/scene_07.png
+- job_18/storyboard/scene_08.png
+- job_18/storyboard/scene_09.png
+- job_18/storyboard/scene_10.png
+- job_18/storyboard/scene_11.png
+- job_18/storyboard/scene_12.png
+- job_18/storyboard/scene_13.png
+- job_18/storyboard/scene_14.png
+- job_18/storyboard/scene_15.png
+- job_18/storyboard/scene_16.png
+- job_18/storyboard/scene_17.png
+- job_18/storyboard/scene_18.png
+- job_18/storyboard/scene_19.png
+- job_18/storyboard/scene_20.png
+- job_18/result_summary.md
+- job_18/validation_report.md
+- job_18/result_snapshot.json
