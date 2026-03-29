@@ -11,6 +11,7 @@ from backend.config import ARTIFACTS_DIR, ROOT_DIR
 from backend.schemas import ArtifactPreview, CapabilityDescriptor, CapabilityField, WorkflowStep
 from modules.base import CapabilityModule, ExecutionContext, ExecutionResult, PlannedJob
 from modules.manga.chapter_factory import run_manga_job
+from shared.asset_lock import asset_lock_from_payload
 from shared.providers.ark import ArkProvider
 
 
@@ -110,6 +111,11 @@ class MangaCapability(CapabilityModule):
         visual_style = payload.get("visual_style", "TBD")
 
         workflow = [
+            WorkflowStep(
+                key="asset_lock",
+                title="资产锁定",
+                description="先锁角色固定提示词、场景基线和音色映射，再进入研究与分镜生产。",
+            ),
             WorkflowStep(
                 key="research",
                 title="题材研究",
@@ -229,29 +235,43 @@ class MangaCapability(CapabilityModule):
         visual_style: str,
         chapter_briefs: list[dict],
         scene_count: int,
+        asset_lock: dict | None = None,
     ) -> dict:
+        asset_lock_model = asset_lock_from_payload(asset_lock)
+        lead_character = asset_lock_model.lead_character()
+        scene_baseline = asset_lock_model.scene_baseline_prompt
         storyboard_prompts = []
         for index in range(scene_count):
             chapter = chapter_briefs[index % len(chapter_briefs)]
             memorable_line = f" Memorable line: {chapter['memorable_line']}." if chapter.get("memorable_line") else ""
             world_rule = f" World rule: {chapter['world_rule']}." if chapter.get("world_rule") else ""
             fidelity_notes = f" Fidelity rule: {chapter['fidelity_notes']}." if chapter.get("fidelity_notes") else ""
+            scene_lock = f" Scene baseline: {scene_baseline}." if scene_baseline else ""
             storyboard_prompts.append(
                 (
                     f"Manga storyboard frame for {source_title}: "
                     f"{chapter['key_scene']} Emotion: {chapter['emotion']}. "
-                    f"Style: {visual_style}.{memorable_line}{world_rule}{fidelity_notes} "
+                    f"Style: {visual_style}.{scene_lock}{memorable_line}{world_rule}{fidelity_notes} "
                     "Respect original character motivations, cinematic composition, dramatic lighting. "
                     "Do not render chapter numbers, scene labels, timestamps, or storyboard captions inside the image."
                 )
             )
 
+        lead_prompt = (
+            f"Chinese dark xianxia manga portrait for {source_title}, lead protagonist, "
+            f"{visual_style}, intricate costume details, cinematic contrast, faithful to the original protagonist image."
+        )
+        if lead_character is not None and lead_character.fixed_prompt:
+            lead_prompt = (
+                f"Chinese dark xianxia manga portrait for {source_title}. "
+                f"Locked lead character design: {lead_character.fixed_prompt}. "
+                f"Style {visual_style}. Preserve original protagonist identity and silhouette."
+            )
+
         return {
-            "lead_character": (
-                f"Chinese dark xianxia manga portrait for {source_title}, lead protagonist, "
-                f"{visual_style}, intricate costume details, cinematic contrast, faithful to the original protagonist image."
-            ),
+            "lead_character": lead_prompt,
             "storyboard": storyboard_prompts,
+            "storyboard_prompts": storyboard_prompts,
         }
 
     def _build_scene_tiles(self, scene_images: list[Path], max_tiles: int = 8) -> list[str]:

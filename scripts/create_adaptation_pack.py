@@ -15,10 +15,11 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.adaptation_packs import DEFAULT_VISUAL_STYLE
 from backend.config import ADAPTATIONS_DIR
+from shared.asset_lock import ensure_asset_lock_scaffold
 from shared.source_materials import ensure_source_layout
 
 
-def build_briefs(chapter_start: int, chapter_end: int) -> list[dict]:
+def build_briefs(chapter_start: int, chapter_end: int, *, chapter_target_duration_seconds: float | None = None) -> list[dict]:
     briefs = []
     for chapter in range(chapter_start, chapter_end + 1):
         briefs.append(
@@ -31,6 +32,7 @@ def build_briefs(chapter_start: int, chapter_end: int) -> list[dict]:
                 "fidelity_notes": "",
                 "memorable_line": "",
                 "world_rule": "",
+                "target_duration_seconds": chapter_target_duration_seconds,
             }
         )
     return briefs
@@ -44,6 +46,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chapter-end", type=int, default=20)
     parser.add_argument("--default-project-name", default=None)
     parser.add_argument("--default-scene-count", type=int, default=20)
+    parser.add_argument("--default-target-duration-seconds", type=float, default=66.0)
+    parser.add_argument("--chapter-target-duration-seconds", type=float, default=None)
     parser.add_argument("--visual-style", default=DEFAULT_VISUAL_STYLE)
     return parser.parse_args()
 
@@ -60,6 +64,7 @@ def main() -> int:
 
     reports_dir.mkdir(parents=True, exist_ok=False)
     ensure_source_layout(pack_dir)
+    ensure_asset_lock_scaffold(pack_dir, source_title=args.source_title)
 
     pack_meta = {
         "pack_name": args.pack_name,
@@ -67,11 +72,20 @@ def main() -> int:
         "chapter_range": f"{args.chapter_start}-{args.chapter_end}",
         "default_project_name": args.default_project_name or args.pack_name.replace("_", "-"),
         "default_scene_count": args.default_scene_count,
+        "default_target_duration_seconds": args.default_target_duration_seconds,
         "recommended_visual_style": args.visual_style,
     }
     (pack_dir / "pack.json").write_text(json.dumps(pack_meta, ensure_ascii=False, indent=2), encoding="utf-8")
     (pack_dir / "chapter_briefs.json").write_text(
-        json.dumps(build_briefs(args.chapter_start, args.chapter_end), ensure_ascii=False, indent=2),
+        json.dumps(
+            build_briefs(
+                args.chapter_start,
+                args.chapter_end,
+                chapter_target_duration_seconds=args.chapter_target_duration_seconds,
+            ),
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
     (pack_dir / "README.md").write_text(
@@ -86,6 +100,8 @@ def main() -> int:
                 "## 文件说明",
                 "- `pack.json`：适配包元信息",
                 "- `chapter_briefs.json`：章节摘要输入或模型生成结果",
+                "- `asset_lock.json`：角色 / 场景 / 音色锁定配置",
+                "- `assets/`：角色参考图、场景参考图、音色与 LoRA 资产目录",
                 "- `source/`：原文章节目录、网页采集模板与索引",
                 "- `reports/`：自动沉淀出来的阶段报告和结果索引",
                 "",

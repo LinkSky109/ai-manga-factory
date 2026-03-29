@@ -1,0 +1,387 @@
+[
+  {
+    "character_id": "character_01",
+    "name": "萧炎",
+    "display_name": "萧炎",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-YunxiNeural",
+    "aliases": [
+      "小炎",
+      "炎儿",
+      "萧炎哥哥"
+    ],
+    "fixed_prompt": "黑发清瘦少年，深色练功短衣或家族便装，左手黑色古朴戒指，少年感明显，眼神倔强压抑又不服输，不要成熟胡须，不要现代配饰。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_yan_ref.png",
+    "lora_path": null,
+    "dramatic_role": "lead",
+    "visual_traits": [
+      "黑发清瘦少年",
+      "深色练功短衣或家族便装",
+      "左手黑色古朴戒指",
+      "少年感明显",
+      "眼神倔强压抑又不服输",
+      "不要成熟胡须"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_yan_ref.png",
+      "lora": null
+    },
+    "notes": "基于前 1-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于前 1-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "戒指与少年感必须稳定",
+      "失败期仍保持倔强，不画成成熟大叔"
+    ]
+  },
+  {
+    "character_id": "character_02",
+    "name": "萧薰儿",
+    "display_name": "萧薰儿",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-XiaoyiNeural",
+    "aliases": [
+      "薰儿",
+      "熏儿",
+      "萧熏儿"
+    ],
+    "fixed_prompt": "黑色长发少女，紫色衣裙，气质安静克制，眉眼清冷但保留温柔，乌坦城大家族少女，不要夸张珠宝，不要现代妆容。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_xun_er_ref.png",
+    "lora_path": null,
+    "dramatic_role": "support",
+    "visual_traits": [
+      "黑色长发少女",
+      "紫色衣裙",
+      "气质安静克制",
+      "眉眼清冷但保留温柔",
+      "乌坦城大家族少女",
+      "不要夸张珠宝"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_xun_er_ref.png",
+      "lora": null
+    },
+    "notes": "基于前 1-2 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于前 1-2 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "气质要克制温柔，不做夸张甜妹化",
+      "始终与乌坦城家族少女设定一致"
+    ]
+  },
+  {
+    "character_id": "character_03",
+    "name": "萧战",
+    "display_name": "萧战",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-YunyangNeural",
+    "aliases": [
+      "族长",
+      "父亲",
+      "父亲大人"
+    ],
+    "fixed_prompt": "中年族长，深黑或深青长袍，身形挺拔，眉宇威严克制，带疲惫与护子压力，不要年轻化，不要夸张盔甲。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_zhan_ref.png",
+    "lora_path": null,
+    "dramatic_role": "support",
+    "visual_traits": [
+      "中年族长",
+      "深黑或深青长袍",
+      "身形挺拔",
+      "眉宇威严克制",
+      "带疲惫与护子压力",
+      "不要年轻化"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\xiao_zhan_ref.png",
+      "lora": null
+    },
+    "notes": "基于第 3-7 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于第 3-7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "父亲与族长压迫感并存",
+      "服装维持家族高位者质感，不使用现代西装"
+    ]
+  },
+  {
+    "character_id": "character_04",
+    "name": "纳兰嫣然",
+    "display_name": "纳兰嫣然",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-XiaoxiaoNeural",
+    "aliases": [
+      "嫣然"
+    ],
+    "fixed_prompt": "云岚宗少女，月白宗门长袍，姿态挺直，神情清冷自持，年轻但锋利，贵族感明确，不要浓妆，不要成熟化处理。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\nalan_yanran_ref.png",
+    "lora_path": null,
+    "dramatic_role": "support",
+    "visual_traits": [
+      "云岚宗少女",
+      "月白宗门长袍",
+      "姿态挺直",
+      "神情清冷自持",
+      "年轻但锋利",
+      "贵族感明确"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\nalan_yanran_ref.png",
+      "lora": null
+    },
+    "notes": "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "云岚宗弟子身份明确",
+      "高傲克制，不做恶女脸谱化"
+    ]
+  },
+  {
+    "character_id": "character_05",
+    "name": "葛叶",
+    "display_name": "葛叶",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-YunjianNeural",
+    "aliases": [
+      "葛老",
+      "葛长老"
+    ],
+    "fixed_prompt": "云岚宗年长男性长老，灰白或月白长袍，身形偏瘦，表情审慎冷硬，来意强势但克制，不要铠甲化。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\ge_ye_ref.png",
+    "lora_path": null,
+    "dramatic_role": "support",
+    "visual_traits": [
+      "云岚宗年长男性长老",
+      "灰白或月白长袍",
+      "身形偏瘦",
+      "表情审慎冷硬",
+      "来意强势但克制",
+      "不要铠甲化"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\ge_ye_ref.png",
+      "lora": null
+    },
+    "notes": "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "老成使者感稳定",
+      "不夸张甲胄化"
+    ]
+  },
+  {
+    "character_id": "character_06",
+    "name": "药老",
+    "display_name": "药老",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-YunyangNeural",
+    "aliases": [
+      "老师",
+      "老先生",
+      "药尘"
+    ],
+    "fixed_prompt": "半透明苍老灵魂体，白发长须，灰白长袍，悬浮感，神秘而从容，带压迫感但不狰狞，不要实体盔甲。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\yao_lao_ref.png",
+    "lora_path": null,
+    "dramatic_role": "support",
+    "visual_traits": [
+      "半透明苍老灵魂体",
+      "白发长须",
+      "灰白长袍",
+      "悬浮感",
+      "神秘而从容",
+      "带压迫感但不狰狞"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\yao_lao_ref.png",
+      "lora": null
+    },
+    "notes": "基于第 8-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "基于第 8-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "灵魂体半透明感稳定",
+      "悬浮与白发长袍是核心识别点"
+    ]
+  },
+  {
+    "character_id": "character_07",
+    "name": "旁白",
+    "display_name": "旁白",
+    "source_title": "斗破苍穹",
+    "voice_id": "zh-CN-YunxiaNeural",
+    "aliases": [
+      "解说"
+    ],
+    "fixed_prompt": "冷静克制的叙事旁白，不代替角色表演，不使用夸张情绪词，不添加原文之外的新设定。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\narrator_ref.png",
+    "lora_path": null,
+    "dramatic_role": "narrator",
+    "visual_traits": [
+      "冷静克制的叙事旁白",
+      "不代替角色表演",
+      "不使用夸张情绪词",
+      "不添加原文之外的新设定"
+    ],
+    "costume_notes": "",
+    "expression_notes": "",
+    "asset_status": "reference_placeholder",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\characters\\narrator_ref.png",
+      "lora": null
+    },
+    "notes": "旁白声线占位卡，用于锁定解说风格与 QA 映射。",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "placeholder_reference_needs_replacement",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为文本提取占位参考卡，待正式设定图替换",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "名称与 alias 已映射到 asset_lock",
+      "voice_id 已用于 storyboard/audio_plan",
+      "固定 prompt 已覆盖镜头提示词",
+      "参考图状态已核对"
+    ],
+    "source_evidence": [
+      "旁白声线占位卡，用于锁定解说风格与 QA 映射。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "只补叙述空缺，不复述对白",
+      "不额外创造原著不存在的信息"
+    ]
+  }
+]

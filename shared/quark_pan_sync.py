@@ -58,6 +58,14 @@ PACK_REPORT_FILES = (
 )
 
 
+def _runtime_pack_reports_dir(pack_name: str) -> Path:
+    return ARTIFACTS_DIR / "pack_reports" / pack_name / "reports"
+
+
+def _legacy_pack_reports_dir(pack_name: str) -> Path:
+    return ADAPTATIONS_DIR / pack_name / "reports"
+
+
 @dataclass(slots=True)
 class UploadEntry:
     local_path: Path
@@ -199,7 +207,9 @@ def collect_business_output_entries(*, config: dict[str, Any], job_ids: set[int]
         if config.get("upload_pack_reports", True):
             raw_pack_name = str(snapshot.get("adaptation_pack") or "").strip()
             if raw_pack_name:
-                pack_dir = ADAPTATIONS_DIR / raw_pack_name / "reports"
+                pack_dir = _runtime_pack_reports_dir(raw_pack_name)
+                if not pack_dir.exists():
+                    pack_dir = _legacy_pack_reports_dir(raw_pack_name)
                 pack_root = (
                     _safe_remote_name(str(config["root_folder"])),
                     _safe_remote_name(str(config["pack_reports_folder"])),

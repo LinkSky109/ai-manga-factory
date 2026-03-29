@@ -1,0 +1,41 @@
+[
+  {
+    "scene_id": "primary_world",
+    "name": "斗破苍穹 主场景基线",
+    "source_title": "斗破苍穹",
+    "baseline_prompt": "斗气大陆乌坦城前期家族戏气质，青灰石墙、旧殿火盆、月色与火光并存，东方玄幻宅邸与后山山崖环境统一，材质偏石木与布料，避免现代城市、赛博元素、科幻灯光和西式宫廷装饰。",
+    "reference_image_path": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\scenes\\wutan_city_ref.png",
+    "lighting_notes": "",
+    "material_notes": "",
+    "camera_guardrails": [],
+    "asset_status": "reference_ready",
+    "reference_assets": {
+      "image": "E:\\work\\project-manager\\workhome\\projects\\ai-manga-factory\\adaptations\\dpcq_ch1_20\\assets\\scenes\\wutan_city_ref.png"
+    },
+    "notes": "",
+    "approval_gate": "art_review",
+    "missing_assets": [],
+    "asset_status_detail": "primary_world_reference_ready",
+    "review_status": "in_review",
+    "review_notes": "",
+    "approval_notes": "当前为统一世界场景参考，待拆分更多章节专属场景卡",
+    "reviewed_by": "",
+    "reviewed_at": null,
+    "owner": "adaptation_pack:dpcq_ch1_20",
+    "review_checklist": [
+      "baseline_prompt 与 asset_lock 一致",
+      "参考图路径可访问",
+      "镜头禁忌与材质说明已登记",
+      "适配包章节可复用"
+    ],
+    "source_evidence": [
+      "斗气大陆乌坦城前期家族戏气质，青灰石墙、旧殿火盆、月色与火光并存，东方玄幻宅邸与后山山崖环境统一，材质偏石木与布料，避免现代城市、赛博元素、科幻灯光和西式宫廷装饰。"
+    ],
+    "last_verified_job_id": 49,
+    "usage_scope": "storyboard_audio_video",
+    "continuity_guardrails": [
+      "保持斗气大陆前期乌坦城的石木材质与冷暖混合光源",
+      "避免现代城市、赛博元素和西式宫廷装饰"
+    ]
+  }
+]

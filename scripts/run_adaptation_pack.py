@@ -104,7 +104,7 @@ def main() -> int:
         str((ARTIFACTS_DIR / item.path_hint).resolve()) if item.path_hint else "(无路径)"
         for item in final_job.artifacts
     ]
-    report_path = pack.root_dir / "reports" / "stage_report.md"
+    report_path = ARTIFACTS_DIR / f"job_{final_job.id}" / "stage_report.md"
     write_stage_report(
         report_path,
         source_title=pack.source_title,

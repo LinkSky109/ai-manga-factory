@@ -1,0 +1,87 @@
+{
+  "scene": {
+    "baseline_prompt": "斗气大陆乌坦城前期家族戏气质，青灰石墙、旧殿火盆、月色与火光并存，东方玄幻宅邸与后山山崖环境统一，材质偏石木与布料，避免现代城市、赛博元素、科幻灯光和西式宫廷装饰。",
+    "reference_image_path": "assets/scenes/wutan_city_ref.png"
+  },
+  "characters": [
+    {
+      "name": "萧炎",
+      "aliases": [
+        "小炎",
+        "炎儿",
+        "萧炎哥哥"
+      ],
+      "fixed_prompt": "黑发清瘦少年，深色练功短衣或家族便装，左手黑色古朴戒指，少年感明显，眼神倔强压抑又不服输，不要成熟胡须，不要现代配饰。",
+      "voice_id": "zh-CN-YunxiNeural",
+      "reference_image_path": "assets/characters/xiao_yan_ref.png",
+      "notes": "基于前 1-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "萧薰儿",
+      "aliases": [
+        "薰儿",
+        "熏儿",
+        "萧熏儿"
+      ],
+      "fixed_prompt": "黑色长发少女，紫色衣裙，气质安静克制，眉眼清冷但保留温柔，乌坦城大家族少女，不要夸张珠宝，不要现代妆容。",
+      "voice_id": "zh-CN-XiaoyiNeural",
+      "reference_image_path": "assets/characters/xiao_xun_er_ref.png",
+      "notes": "基于前 1-2 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "萧战",
+      "aliases": [
+        "族长",
+        "父亲",
+        "父亲大人"
+      ],
+      "fixed_prompt": "中年族长，深黑或深青长袍，身形挺拔，眉宇威严克制，带疲惫与护子压力，不要年轻化，不要夸张盔甲。",
+      "voice_id": "zh-CN-YunyangNeural",
+      "reference_image_path": "assets/characters/xiao_zhan_ref.png",
+      "notes": "基于第 3-7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "纳兰嫣然",
+      "aliases": [
+        "嫣然"
+      ],
+      "fixed_prompt": "云岚宗少女，月白宗门长袍，姿态挺直，神情清冷自持，年轻但锋利，贵族感明确，不要浓妆，不要成熟化处理。",
+      "voice_id": "zh-CN-XiaoxiaoNeural",
+      "reference_image_path": "assets/characters/nalan_yanran_ref.png",
+      "notes": "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "葛叶",
+      "aliases": [
+        "葛老",
+        "葛长老"
+      ],
+      "fixed_prompt": "云岚宗年长男性长老，灰白或月白长袍，身形偏瘦，表情审慎冷硬，来意强势但克制，不要铠甲化。",
+      "voice_id": "zh-CN-YunjianNeural",
+      "reference_image_path": "assets/characters/ge_ye_ref.png",
+      "notes": "基于第 7 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "药老",
+      "aliases": [
+        "老师",
+        "老先生",
+        "药尘"
+      ],
+      "fixed_prompt": "半透明苍老灵魂体，白发长须，灰白长袍，悬浮感，神秘而从容，带压迫感但不狰狞，不要实体盔甲。",
+      "voice_id": "zh-CN-YunyangNeural",
+      "reference_image_path": "assets/characters/yao_lao_ref.png",
+      "notes": "基于第 8-9 章文本提取的占位参考卡，待后续替换为正式角色设定图。"
+    },
+    {
+      "name": "旁白",
+      "aliases": [
+        "解说"
+      ],
+      "fixed_prompt": "冷静克制的叙事旁白，不代替角色表演，不使用夸张情绪词，不添加原文之外的新设定。",
+      "voice_id": "zh-CN-YunxiaNeural",
+      "reference_image_path": "assets/characters/narrator_ref.png",
+      "notes": "旁白声线占位卡，用于锁定解说风格与 QA 映射。"
+    }
+  ]
+}

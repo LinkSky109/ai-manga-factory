@@ -32,6 +32,47 @@
 
 ---
 
+## [LRN-20260330-001] preference
+
+**Logged**: 2026-03-30T09:55:00+08:00  
+**Priority**: medium  
+**Status**: active  
+**Area**: validation
+
+### Summary
+做全流程验证时，默认使用“最小测试单元”：先用单个 chapter、最小允许数量的 shot / keyframe 和最小必要输入做 smoke，验证通过后再扩大范围。
+### Details
+本轮 `ai-manga-factory` 资产锁推进到成片音频层时，用户明确要求“全流程测试时使用最小测试单元”。实际执行上，应优先选择单个 pack 的单章节范围，同时把 `chapter_shot_count`、`chapter_keyframe_count` 等参数打到当前允许的下限，先拿到可复现的 smoke 证据，再决定是否进入更大范围回归。
+### Suggested Action
+后续凡是本地验收、全流程 smoke、或新链路第一次验证，默认先选“单 pack + 单章 + 最小允许参数”的方案。只有当最小单元通过后，才扩到多章、批量或更高分镜设置。
+### Metadata
+- Source: user_preference
+- Related Files: scripts/run_adaptation_pack.py, modules/manga/chapter_factory.py
+- Tags: validation, smoke-test, scope-control
+- Pattern-Key: validation.use_minimal_end_to_end_unit_first
+
+---
+
+## [LRN-20260330-001] best_practice
+
+**Logged**: 2026-03-30T00:00:00+08:00  
+**Priority**: high  
+**Status**: pending  
+**Area**: manga-workflow
+
+### Summary
+`modules/manga/chapter_factory.py` 内存在历史同名方法的后置覆盖版本，编辑 `_review_plan`、`_write_manifest`、`_select_keyframe_rows` 这类方法时，必须检查文件尾部是否还有后续定义，否则前面的修改会被静默吞掉。
+### Details
+本轮接入资产锁时，前段 `_write_manifest` 已写入 `asset_lock`，但最终运行结果里仍然缺字段。继续排查后发现文件尾部还有一版后置 `_write_manifest`，实际执行时以后者为准；`_review_plan` 也有同类覆盖。修复方式不是只改首个命中的定义，而是确认最终生效的最后一个同名方法也同步更新。
+### Suggested Action
+后续改 `chapter_factory.py` 时，先全文定位同名 `def`，确认最终生效的方法位置，再做补丁和回归；必要时优先清理历史覆盖版本，避免后续再踩同类阴影问题。
+### Metadata
+- Source: implementation
+- Related Files: modules/manga/chapter_factory.py
+- Tags: override, duplicate-definition, manga-workflow
+- Pattern-Key: manga.check_trailing_method_overrides_before_edit
+---
+
 ## [LRN-20260329-006] user_preference
 
 **Logged**: 2026-03-29T22:32:25+08:00

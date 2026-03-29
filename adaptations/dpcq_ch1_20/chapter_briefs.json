@@ -7,7 +7,8 @@
     "emotion": "压抑落寞",
     "fidelity_notes": "必须保留萧炎从天才跌落的背景、萧薰儿对萧炎的特殊态度及斗之气测试场景。",
     "memorable_line": "萧炎，斗之力，三段！级别：低级！",
-    "world_rule": "斗之气分一至十段，十段可凝聚斗之气旋成为斗者。"
+    "world_rule": "斗之气分一至十段，十段可凝聚斗之气旋成为斗者。",
+    "target_duration_seconds": 78.0
   },
   {
     "chapter": 2,
@@ -17,7 +18,8 @@
     "emotion": "不甘愤懑",
     "fidelity_notes": "必须保留穿越设定、斗气大陆的核心规则（功法斗技等级、斗者条件）。",
     "memorable_line": "把劳资穿过来当废物玩吗？草！",
-    "world_rule": "斗气大陆以斗气为核心，功法与斗技分天地玄黄四阶十二级。"
+    "world_rule": "斗气大陆以斗气为核心，功法与斗技分天地玄黄四阶十二级。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 3,
@@ -27,7 +29,8 @@
     "emotion": "尴尬温暖",
     "fidelity_notes": "必须保留萧薰儿帮萧炎解围的情节及客人的实力等级标识（星辰数量）。",
     "memorable_line": "萧炎哥哥，坐这里吧！",
-    "world_rule": "斗者等级通过胸口星辰数量标识（如五星斗者代表五段斗者实力）。"
+    "world_rule": "斗者等级通过胸口星辰数量标识（如五星斗者代表五段斗者实力）。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 4,
@@ -37,7 +40,8 @@
     "emotion": "屈辱愤怒",
     "fidelity_notes": "必须保留熏儿透露婚约真相、萧炎的心理活动及两人互动。",
     "memorable_line": "如果自己现在是一名斗师，谁又敢如此践踏于我？",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 5,
@@ -47,7 +51,8 @@
     "emotion": "压抑愤怒",
     "fidelity_notes": "必须保留萧战的反应、长老的阻拦及聚气散的出现。",
     "memorable_line": "",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 60.0
   },
   {
     "chapter": 6,
@@ -57,7 +62,8 @@
     "emotion": "坚定反击",
     "fidelity_notes": "必须保留炼药师设定、萧炎的反击及与纳兰嫣然的对话。",
     "memorable_line": "葛叶老先生，你还是把丹药收回去吧，今日之事，我们或许不会答应！",
-    "world_rule": "炼药师需火属性灵魂+木气+灵魂感知力，聚气散可让九段斗之气百分百凝聚斗之气旋。"
+    "world_rule": "炼药师需火属性灵魂+木气+灵魂感知力，聚气散可让九段斗之气百分百凝聚斗之气旋。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 7,
@@ -67,7 +73,8 @@
     "emotion": "热血反击",
     "fidelity_notes": "必须保留萧炎提出三年之约、血手印休书及“莫欺少年穷”的核心情节与台词。",
     "memorable_line": "三十年河东，三十年河西，莫欺少年穷！",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 8,
@@ -77,7 +84,8 @@
     "emotion": "悬念转折",
     "fidelity_notes": "必须保留老者现身及斗之气消失原因的揭示情节。",
     "memorable_line": "",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 9,
@@ -87,7 +95,8 @@
     "emotion": "期待好奇",
     "fidelity_notes": "必须保留拜师情节及药老对炼药师等级与进化功法的说明。",
     "memorable_line": "",
-    "world_rule": "斗气大陆炼药师等级由低到高分为一至九品。"
+    "world_rule": "斗气大陆炼药师等级由低到高分为一至九品。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 10,
@@ -97,7 +106,8 @@
     "emotion": "温馨轻松",
     "fidelity_notes": "必须保留萧炎恢复自信的状态、薰儿无条件支持及借钱的核心情节。",
     "memorable_line": "她一定会后悔的。",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 11,
@@ -107,7 +117,8 @@
     "emotion": "温暖信任",
     "fidelity_notes": "必须保留萧炎的灵魂感知力、对薰儿的保护承诺及坊市背景设定。",
     "memorable_line": "站在哥背后，风浪，哥帮你挡！",
-    "world_rule": "魔核不能直接吸收，是炼药和武器加持的重要材料。"
+    "world_rule": "魔核不能直接吸收，是炼药和武器加持的重要材料。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 12,
@@ -117,7 +128,8 @@
     "emotion": "护短甜蜜",
     "fidelity_notes": "必须保留萧炎阻止加列奥、薰儿珍视萧炎手链的关键情节。",
     "memorable_line": "以后离他远点。",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 13,
@@ -127,7 +139,8 @@
     "emotion": "隐忍反击",
     "fidelity_notes": "必须保留萧炎用年龄差距怼加列奥的情节及黑铁片的发现过程。",
     "memorable_line": "一条疯狗而已，它咬了你，你难道还想咬回来？",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 14,
@@ -137,7 +150,8 @@
     "emotion": "惊喜期待",
     "fidelity_notes": "必须保留吸掌的获得过程及药老用异火炼药的细节。",
     "memorable_line": "吸掌：炼至大成，可吸千斤巨石，若是遇敌，狂猛吸力，能将人体血液，强行扯出！",
-    "world_rule": "斗技分天地玄黄四阶，玄阶斗技等级高于黄阶。"
+    "world_rule": "斗技分天地玄黄四阶，玄阶斗技等级高于黄阶。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 15,
@@ -147,7 +161,8 @@
     "emotion": "欣慰遗憾",
     "fidelity_notes": "必须保留萧炎修炼进展及尝试吸掌的情节。",
     "memorable_line": "唉，斗技虽然是玄阶，可斗之气却太弱了，根本发挥不出多大的威力。",
-    "world_rule": "斗之气修炼基础阶段难度大，成为斗者后修炼速度会大幅加快。"
+    "world_rule": "斗之气修炼基础阶段难度大，成为斗者后修炼速度会大幅加快。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 16,
@@ -157,7 +172,8 @@
     "emotion": "微妙",
     "fidelity_notes": "必须保留萧炎对萧媚的冷淡态度、薰儿击败萧宁的过程及薰儿对萧炎的特殊亲近。",
     "memorable_line": "",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 60.0
   },
   {
     "chapter": 17,
@@ -167,7 +183,8 @@
     "emotion": "对峙",
     "fidelity_notes": "必须保留萧宁的挑衅威胁、萧炎的冷静反击及薰儿护萧炎的情节。",
     "memorable_line": "嗯，好吧，一年后…我等着你把我打成残疾。",
-    "world_rule": ""
+    "world_rule": "",
+    "target_duration_seconds": 66.0
   },
   {
     "chapter": 18,
@@ -177,7 +194,8 @@
     "emotion": "惊喜",
     "fidelity_notes": "必须保留药老传授八极崩的过程、八极崩的设定及提升肉体强度的方法。",
     "memorable_line": "挨打！挨得越重越好！",
-    "world_rule": "斗技分为黄、玄、地、天四个等级，玄阶高级斗技八极崩威力堪比地阶低级。"
+    "world_rule": "斗技分为黄、玄、地、天四个等级，玄阶高级斗技八极崩威力堪比地阶低级。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 19,
@@ -187,7 +205,8 @@
     "emotion": "坚韧",
     "fidelity_notes": "必须保留药老斗气鞭挞训练、筑基灵液修复作用及萧炎晋升第五段的核心情节。",
     "memorable_line": "再来！",
-    "world_rule": "斗气鞭挞可刺激斗之气流动并强化肉体，筑基灵液能修复身体并辅助修炼。"
+    "world_rule": "斗气鞭挞可刺激斗之气流动并强化肉体，筑基灵液能修复身体并辅助修炼。",
+    "target_duration_seconds": 72.0
   },
   {
     "chapter": 20,
@@ -197,6 +216,7 @@
     "emotion": "盘算",
     "fidelity_notes": "必须保留萧炎缺钱、拍卖筑基灵液的决定及药老对炼药师难度的解释。",
     "memorable_line": "整个加玛帝国，我却能打包票，没人能够炼制出与我相同的筑基灵液！",
-    "world_rule": "炼药师需名师指点、灵魂感知力及大量实验，材料搭配与火焰控制决定丹药效果。"
+    "world_rule": "炼药师需名师指点、灵魂感知力及大量实验，材料搭配与火焰控制决定丹药效果。",
+    "target_duration_seconds": 72.0
   }
 ]

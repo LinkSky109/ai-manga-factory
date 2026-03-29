@@ -4,5 +4,6 @@
   "chapter_range": "1-20",
   "default_project_name": "dpcq-ch1-20",
   "default_scene_count": 20,
-  "recommended_visual_style": "热血玄幻、少年逆袭、斗气大陆、火焰能量、电影级分镜、东方奇幻漫画"
+  "recommended_visual_style": "热血玄幻、少年逆袭、斗气大陆、火焰能量、电影级分镜、东方奇幻漫画",
+  "default_target_duration_seconds": 66.0
 }

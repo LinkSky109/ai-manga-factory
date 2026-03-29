@@ -166,3 +166,95 @@ E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\validate_job_output.p
 ```
 
 现在校验器已经支持真实章节号，不会再把 `chapter_13`、`chapter_19` 这类定向返工任务误判成 `chapter_01` 缺失。
+## 章节产物 JSON 查看顺序
+
+启用适配包资产锁时，推荐按下面顺序查看章节产物：
+
+1. `story_grounding.json`
+   - 章节事实源
+   - 角色、场景、世界规则、候选台词与有效旁白候选
+2. `storyboard_blueprint.json`
+   - 目标时长、镜头数、关键帧数
+   - 每个 shot 的 `speaker`、`present_characters`、`dialogue`、`narration`
+3. `storyboard.json`
+   - 最终分镜表
+   - `对白角色`、`出镜角色` 应该已经全部归一成真实角色名
+4. `audio_plan.json`
+   - `dialogue_tracks` / `narration_tracks` / `voice_tracks`
+   - `canonical_character`、`voice_id`、`bus`、`priority`、`duck_target`
+5. `manifest.json`
+   - 顶层追踪信息
+   - `asset_lock`、`asset_cards`、`story_pipeline`
+
+## 标准化资产卡
+
+pack 模式下，除了 `asset_lock.json`，还需要维护两类标准化资产卡：
+
+- `assets/characters/character_cards.json`
+- `assets/scenes/scene_cards.json`
+
+角色卡最少应包含：
+
+- `name`
+- `voice_id`
+- `aliases`
+- `fixed_prompt`
+- `dramatic_role`
+- `asset_status`
+- `reference_assets`
+
+场景卡最少应包含：
+
+- `scene_id`
+- `baseline_prompt`
+- `asset_status`
+- `reference_assets`
+
+这些卡片文件的意义是把“角色/场景资产是否真的补齐”从图片占位变成结构化状态，而不是只靠 `reference_image_path` 存不存在来猜。
+
+## 普通 job 与 asset_lock pack 的兼容差异
+
+普通 job：
+
+- 可以没有 `asset_lock.json`
+- 仍允许走兼容模式出片
+- 不会启用“真实角色必达”的硬门禁
+
+asset_lock pack：
+
+- 默认读取 `asset_lock.json`、角色卡、场景卡
+- 分镜阶段必须直接产出真实角色名
+- `audio_plan` 不再负责把槽位 speaker 兜底修正成真实角色
+- QA 会检查未归一角色、无效资产路径、generic canonical fallback 等问题
+## 2026-03-30 补充
+
+### 1. 章节长度配置
+
+适配包现在支持小说维度的章节长度规划：
+
+- `pack.json.default_target_duration_seconds`
+- `chapter_briefs.json[*].target_duration_seconds`
+
+运行时会自动汇总为 `chapter_duration_plan`，供 `storyboard_blueprint.json` 与后续时长回流使用。
+
+### 2. 可审阅资产卡
+
+`character_cards.json` / `scene_cards.json` 现在除了基础识别字段，还要关注：
+
+- `asset_status_detail`
+- `review_status`
+- `approval_notes`
+- `owner`
+- `review_checklist`
+- `source_evidence`
+- `last_verified_job_id`
+- `usage_scope`
+
+这让资产库可以直接做审阅，而不是只凭占位图判断。
+
+### 3. 外部 runtime 结果路径
+
+pack 验证结果不再回写 `adaptations/<pack>/reports/`，请改看：
+
+- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\job_<id>`
+- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\pack_reports\<pack>\reports`

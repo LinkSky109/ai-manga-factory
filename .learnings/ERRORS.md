@@ -179,6 +179,35 @@ python.exe: No module named uvicorn
 
 ---
 
+## [ERR-20260330-001] ripgrep-access-denied-in-codex-shell
+
+**Logged**: 2026-03-30T00:00:00+08:00  
+**Priority**: medium  
+**Status**: resolved  
+**Area**: tooling
+
+### Summary
+当前 Codex PowerShell 环境直接调用 `rg.exe` 会返回 `Access is denied`，导致常规代码搜索链路中断。
+### Error
+```text
+Program 'rg.exe' failed to run: Access is denied
+```
+
+### Context
+- Command attempted: `rg -n "...pattern..." tests backend modules\manga shared scripts`
+- Working directory: `E:\work\project-manager\workhome\projects\ai-manga-factory`
+- Observed result: 搜索命令未执行，需改用 PowerShell `Select-String` / `Get-ChildItem` 组合继续排查。
+### Suggested Fix
+在当前桌面环境里默认把 `Select-String` 当作代码搜索后备方案；只有确认 `rg.exe` 可执行时再切回 ripgrep。
+### Metadata
+- Reproducible: yes
+- Related Files: n/a
+
+### Resolution
+- **Resolved**: 2026-03-30T00:00:00+08:00
+- **Notes**: 本轮后续所有代码搜索都改用 `Select-String` 与 Python 按行定位，未再阻塞开发。
+---
+
 ## [ERR-20260326-004] sync-storage-http-timeout
 
 **Logged**: 2026-03-26T23:02:00+08:00

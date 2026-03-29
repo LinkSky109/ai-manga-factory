@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw
 from backend.config import ADAPTATIONS_DIR, ARTIFACTS_DIR, ROOT_DIR
 from backend.schemas import ArtifactPreview
 from modules.base import ExecutionContext, ExecutionResult, PlannedJob
+from shared.asset_lock import AssetLock, asset_lock_from_payload, load_asset_cards, split_character_tokens
 from shared.adaptation_quality import build_quality_markdown, build_quality_prompt, qa_max_rounds, qa_thresholds
 from shared.providers.ark import ArkProvider
 from shared.requirement_mining import RequirementMiner
@@ -72,6 +73,11 @@ class ChapterFactoryRunner:
         self.episode_count = len(self.chapter_briefs)
         self.keyframe_count = self._resolve_keyframe_count(payload)
         self.shot_count = self._resolve_shot_count(payload)
+        default_duration_source = "auto" if isinstance(payload.get("chapter_duration_plan"), dict) else ("request" if payload.get("target_duration_seconds") not in (None, "") else "auto")
+        self.target_duration_source = str(payload.get("target_duration_source") or default_duration_source).strip() or "auto"
+        self.explicit_target_duration = self.target_duration_source == "request"
+        self.explicit_keyframe_count = payload.get("chapter_keyframe_count") not in (None, "")
+        self.explicit_shot_count = payload.get("chapter_shot_count") not in (None, "")
         self.use_model_storyboard = bool(payload.get("use_model_storyboard", False))
         self.use_real_images = bool(payload.get("use_real_images", False))
         self.image_model = str(payload.get("image_model", ArkProvider.DEFAULT_IMAGE_MODEL)).strip() or ArkProvider.DEFAULT_IMAGE_MODEL
@@ -90,6 +96,7 @@ class ChapterFactoryRunner:
         )
         self.storyboard_profile = load_storyboard_profile()
         self.target_duration_seconds = self._resolve_target_duration(payload)
+        self.chapter_duration_plan = self._resolve_chapter_duration_plan(payload)
         self.qa_threshold = qa_thresholds()
         self.ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
         self.ffprobe_exe = str(Path(self.ffmpeg_exe).with_name("ffprobe.exe"))
@@ -115,6 +122,8 @@ class ChapterFactoryRunner:
         self.requirement_miner = RequirementMiner()
         self.chapter_artifacts: list[ArtifactPreview] = []
         self.chapter_packages: list[dict[str, Any]] = []
+        self.asset_lock: AssetLock = asset_lock_from_payload(payload.get("asset_lock"))
+        self.asset_cards = self._load_asset_cards()
         self.source_map = self._load_source_map()
 
     def run(self) -> ExecutionResult:
@@ -125,6 +134,7 @@ class ChapterFactoryRunner:
         chapters_dir = self.job_dir / "chapters"
         for path in (characters_dir, storyboard_dir, preview_dir, delivery_dir, chapters_dir):
             path.mkdir(parents=True, exist_ok=True)
+        self._report_progress("asset_lock", self._build_asset_lock_progress_details())
         self._report_progress("research", f"研究并初始化《{self.source_title}》 {self.chapter_range} 的章节工厂任务")
 
         research_path = self.job_dir / "research.md"
@@ -135,6 +145,7 @@ class ChapterFactoryRunner:
         manifest_path = self.job_dir / "manifest.json"
         chapters_index_path = self.job_dir / "chapters_index.json"
         qa_overview_path = self.job_dir / "qa_overview.md"
+        asset_lock_snapshot_path = self.job_dir / "asset_lock_snapshot.json"
         lead_image_path = characters_dir / "lead_character.png"
         preview_path = preview_dir / "index.html"
         preview_video_path = preview_dir / "preview.mp4"
@@ -145,6 +156,7 @@ class ChapterFactoryRunner:
             visual_style=self.visual_style,
             chapter_briefs=self.chapter_briefs,
             scene_count=max(self.episode_count, 2),
+            asset_lock=self.payload.get("asset_lock"),
         )
         self._write_lead_character(prompt_bundle["lead_character"], lead_image_path)
         self._write_top_level_docs(research_path, screenplay_path, art_path)
@@ -168,13 +180,28 @@ class ChapterFactoryRunner:
             preview_video_path=preview_video_path,
             delivery_video_path=delivery_video_path,
             manifest_path=manifest_path,
+            asset_lock_snapshot_path=asset_lock_snapshot_path,
         )
         failed_chapters = [item for item in self.chapter_packages if not item["qa"]["passed"]]
         if failed_chapters:
             failed_ids = ", ".join(f"第{item['chapter']:02d}章" for item in failed_chapters)
             raise RuntimeError(f"QA 未通过，需继续返工：{failed_ids}")
         self._report_progress("qa_loop", f"已完成章节交付与 QA 汇总，共 {self.episode_count} 章")
-        artifacts = self._build_artifacts(research_path, screenplay_path, art_path, prompts_path, storyboard_path, chapters_index_path, qa_overview_path, lead_image_path, preview_path, preview_video_path, delivery_video_path, manifest_path)
+        artifacts = self._build_artifacts(
+            research_path,
+            screenplay_path,
+            art_path,
+            prompts_path,
+            storyboard_path,
+            chapters_index_path,
+            qa_overview_path,
+            asset_lock_snapshot_path,
+            lead_image_path,
+            preview_path,
+            preview_video_path,
+            delivery_video_path,
+            manifest_path,
+        )
         output_video_count = self.episode_count * 2 + 2
         summary = f"已按章节工厂模式完成《{self.source_title}》{self.chapter_range} 的漫剧交付，共 {self.episode_count} 章。每章均输出分镜 JSON/CSV/XLSX、音频方案、章节预览视频、章节交付视频与 QA 报告。真图数量 {self.real_image_count}，输出视频数量 {output_video_count}。"
         if self.provider_notes:
@@ -197,13 +224,23 @@ class ChapterFactoryRunner:
         qa_rounds: list[dict[str, Any]] = []
         feedback: list[str] = []
         chapter_source = self.source_map.get(chapter_no, "")
-        storyboard_rows = self._fallback_storyboard(brief, chapter_source)
+        story_grounding = self._build_story_grounding(brief, chapter_source)
+        storyboard_blueprint = self._build_storyboard_blueprint(brief, story_grounding)
+        storyboard_rows = self._fallback_storyboard_from_blueprint(brief, storyboard_blueprint)
         for round_no in range(1, qa_max_rounds() + 1):
             self._report_progress(
                 "storyboard_design",
                 f"第 {chapter_no:02d} 章《{brief['title']}》第 {round_no} 轮分镜与音频脚本生成中",
             )
-            storyboard_rows = self._generate_storyboard(brief, chapter_source, feedback, fallback=storyboard_rows)
+            storyboard_blueprint = self._build_storyboard_blueprint(brief, story_grounding, feedback=feedback)
+            storyboard_rows = self._generate_storyboard(
+                brief,
+                chapter_source,
+                feedback,
+                grounding=story_grounding,
+                blueprint=storyboard_blueprint,
+                fallback=storyboard_rows,
+            )
             audio_plan = self._build_audio_plan(brief, storyboard_rows)
             review = self._review_plan(brief, storyboard_rows, audio_plan)
             review["round"] = round_no
@@ -213,6 +250,8 @@ class ChapterFactoryRunner:
             feedback = [*review["issues"], *review["blockers"]]
 
         storyboard_json_path = storyboard_dir / "storyboard.json"
+        story_grounding_path = storyboard_dir / "story_grounding.json"
+        storyboard_blueprint_path = storyboard_dir / "storyboard_blueprint.json"
         storyboard_csv_path = storyboard_dir / "storyboard.csv"
         storyboard_xlsx_path = storyboard_dir / "storyboard.xlsx"
         screenplay_path = chapter_dir / "screenplay.md"
@@ -228,22 +267,44 @@ class ChapterFactoryRunner:
         qa_report_path = qa_dir / "qa_report.md"
         qa_snapshot_path = qa_dir / "qa_snapshot.json"
         keyframe_rows = self._select_keyframe_rows(storyboard_rows)
+        audio_plan["story_grounding_summary"] = {
+            "character_names": story_grounding.get("character_names", []),
+            "scene": story_grounding.get("scene", {}),
+        }
+        audio_plan["storyboard_blueprint_summary"] = {
+            "shot_count": storyboard_blueprint.get("shot_count"),
+            "keyframe_count": storyboard_blueprint.get("keyframe_count"),
+            "target_duration_seconds": storyboard_blueprint.get("target_duration_seconds"),
+        }
         self._report_progress(
             "chapter_packaging",
             f"第 {chapter_no:02d} 章《{brief['title']}》正在生成关键帧、配音与视频",
         )
         image_prompts, keyframe_images = self._generate_keyframes(images_dir, brief, keyframe_rows)
         screenplay_path.write_text(self._build_chapter_script_markdown(brief, storyboard_rows, audio_plan), encoding="utf-8")
+        story_grounding_path.write_text(json.dumps(story_grounding, ensure_ascii=False, indent=2), encoding="utf-8")
+        storyboard_blueprint_path.write_text(json.dumps(storyboard_blueprint, ensure_ascii=False, indent=2), encoding="utf-8")
         storyboard_payload = {
             "chapter": chapter_no,
             "title": brief["title"],
             "summary": brief["summary"],
             "key_scene": brief["key_scene"],
+            "story_grounding_summary": {
+                "character_names": story_grounding.get("character_names", []),
+                "scene": story_grounding.get("scene", {}),
+            },
+            "storyboard_blueprint_summary": {
+                "shot_count": storyboard_blueprint.get("shot_count"),
+                "keyframe_count": storyboard_blueprint.get("keyframe_count"),
+                "target_duration_seconds": storyboard_blueprint.get("target_duration_seconds"),
+            },
             "rows": storyboard_rows,
             "audio": {
+                "render_mode": audio_plan.get("render_mode"),
                 "cue_sheet": audio_plan.get("cue_sheet", []),
                 "narration_tracks": audio_plan.get("narration_tracks", []),
                 "dialogue_tracks": audio_plan.get("dialogue_tracks", []),
+                "voice_tracks": audio_plan.get("voice_tracks", []),
             },
         }
         storyboard_json_path.write_text(json.dumps(storyboard_payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -251,10 +312,10 @@ class ChapterFactoryRunner:
         self._write_storyboard_xlsx(storyboard_rows, storyboard_xlsx_path)
         narration_text = audio_plan["narration_script"]
         voice_script = audio_plan.get("voice_script", narration_text)
-        audio_plan_path.write_text(json.dumps(audio_plan, ensure_ascii=False, indent=2), encoding="utf-8")
         narration_path.write_text(narration_text, encoding="utf-8")
         voice_script_path.write_text(voice_script, encoding="utf-8")
-        self._synthesize_voiceover(voice_script, voiceover_path)
+        self._synthesize_voiceover(audio_plan, voiceover_path, audio_plan.get("voice_style", DEFAULT_TTS_VOICE))
+        audio_plan_path.write_text(json.dumps(audio_plan, ensure_ascii=False, indent=2), encoding="utf-8")
         total_duration = sum(float(row["时长(s)"]) for row in storyboard_rows)
         self._generate_ambience(ambience_path, total_duration, storyboard_rows)
         video_plan = self._build_video_plan(
@@ -289,7 +350,7 @@ class ChapterFactoryRunner:
         qa_snapshot_path.write_text(json.dumps({"rounds": qa_rounds, "final": final_review}, ensure_ascii=False, indent=2), encoding="utf-8")
         preview_html_path.write_text(self._build_chapter_preview_html(brief, storyboard_rows, keyframe_images, video_plan), encoding="utf-8")
 
-        artifact_paths = [str(path.relative_to(ARTIFACTS_DIR)).replace("\\", "/") for path in [storyboard_json_path, storyboard_csv_path, storyboard_xlsx_path, screenplay_path, preview_html_path, preview_video_path, delivery_video_path, video_plan_path, audio_plan_path, narration_path, voice_script_path, voiceover_path, ambience_path, qa_report_path, qa_snapshot_path]]
+        artifact_paths = [str(path.relative_to(ARTIFACTS_DIR)).replace("\\", "/") for path in [story_grounding_path, storyboard_blueprint_path, storyboard_json_path, storyboard_csv_path, storyboard_xlsx_path, screenplay_path, preview_html_path, preview_video_path, delivery_video_path, video_plan_path, audio_plan_path, narration_path, voice_script_path, voiceover_path, ambience_path, qa_report_path, qa_snapshot_path]]
         artifact_paths.extend(str(path.relative_to(ARTIFACTS_DIR)).replace("\\", "/") for path in keyframe_images)
         self.chapter_artifacts.extend(
             [
@@ -298,7 +359,20 @@ class ChapterFactoryRunner:
                 ArtifactPreview(artifact_type="markdown", label=f"第{chapter_no:02d}章 QA 报告", path_hint=str(qa_report_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ]
         )
-        return {"chapter": chapter_no, "title": brief["title"], "storyboard": storyboard_payload, "audio_plan": audio_plan, "artifact_paths": artifact_paths, "preview_video": str(preview_video_path), "delivery_video": str(delivery_video_path), "video_plan": video_plan, "image_prompts": image_prompts, "qa": final_review}
+        return {
+            "chapter": chapter_no,
+            "title": brief["title"],
+            "storyboard": storyboard_payload,
+            "story_grounding": story_grounding,
+            "storyboard_blueprint": storyboard_blueprint,
+            "audio_plan": audio_plan,
+            "artifact_paths": artifact_paths,
+            "preview_video": str(preview_video_path),
+            "delivery_video": str(delivery_video_path),
+            "video_plan": video_plan,
+            "image_prompts": image_prompts,
+            "qa": final_review,
+        }
 
     def _report_progress(self, step_key: str, details: str) -> None:
         if not details:
@@ -308,7 +382,454 @@ class ChapterFactoryRunner:
         except Exception:
             return
 
-    def _generate_storyboard(self, brief: dict[str, Any], source_text: str, feedback: list[str], fallback: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _build_asset_lock_progress_details(self) -> str:
+        asset_lock = self._current_asset_lock()
+        if not asset_lock.exists:
+            return "未检测到适配包资产锁，当前按兼容模式继续执行。"
+        baseline = "已配置" if asset_lock.scene_baseline_prompt else "未配置"
+        validation = "；存在待修复引用" if asset_lock.validation_errors else ""
+        return f"已加载资产锁：角色 {len(asset_lock.characters)} 个，场景基线{baseline}，音色映射将用于分镜、音频与 QA{validation}。"
+
+    def _asset_lock_summary(self) -> dict[str, Any]:
+        return self._current_asset_lock().to_summary()
+
+    def _current_asset_lock(self) -> AssetLock:
+        asset_lock = getattr(self, "asset_lock", None)
+        if isinstance(asset_lock, AssetLock):
+            return asset_lock
+        return AssetLock.empty(pack_root=Path("."))
+
+    def _load_asset_cards(self) -> dict[str, Any]:
+        pack_name = str(self.payload.get("adaptation_pack", "")).strip()
+        pack_root = self._current_asset_lock().pack_root
+        if pack_name:
+            pack_root = ADAPTATIONS_DIR / pack_name
+        return load_asset_cards(pack_root, source_title=self.source_title, asset_lock=self._current_asset_lock())
+
+    def _story_role_characters(self) -> dict[str, Any]:
+        asset_lock = self._current_asset_lock()
+        characters = list(asset_lock.characters)
+        narrator = asset_lock.narrator_character()
+        non_narrators = [character for character in characters if narrator is None or character.name != narrator.name]
+        lead = asset_lock.lead_character() or (non_narrators[0] if non_narrators else None)
+        support = next((character for character in non_narrators if lead is None or character.name != lead.name), None)
+        rival = next(
+            (
+                character
+                for character in non_narrators
+                if (lead is None or character.name != lead.name)
+                and (support is None or character.name != support.name)
+            ),
+            None,
+        )
+        return {
+            "lead": lead,
+            "support": support,
+            "rival": rival,
+            "narrator": narrator,
+        }
+
+    def _canonicalize_character_name(self, raw_name: str | None) -> str:
+        token = str(raw_name or "").strip()
+        if not token:
+            return ""
+        character = self._current_asset_lock().resolve_character(token)
+        return character.name if character is not None else token
+
+    def _build_story_grounding(self, brief: dict[str, Any], source_text: str) -> dict[str, Any]:
+        asset_lock = self._current_asset_lock()
+        cards = self.asset_cards
+        cleaned_source_lines = self._clean_source_lines(source_text or brief.get("summary") or "")
+        source_excerpt = "\n".join(cleaned_source_lines)[:1800]
+        lowered_source = "\n".join(cleaned_source_lines).lower()
+        detected_characters: list[dict[str, Any]] = []
+        for card in cards.get("character_cards", []):
+            if not isinstance(card, dict):
+                continue
+            name = str(card.get("name") or "").strip()
+            if not name:
+                continue
+            aliases = [name, *[str(alias).strip() for alias in card.get("aliases", []) if str(alias).strip()]]
+            matched_aliases = [alias for alias in aliases if alias and alias.lower() in lowered_source]
+            if matched_aliases or not source_excerpt:
+                detected_characters.append(
+                    {
+                        "name": name,
+                        "voice_id": str(card.get("voice_id") or "").strip(),
+                        "aliases": aliases,
+                        "fixed_prompt": str(card.get("fixed_prompt") or "").strip(),
+                        "reference_image_path": card.get("reference_image_path"),
+                        "dramatic_role": str(card.get("dramatic_role") or "").strip() or ("narrator" if name == "旁白" else "primary"),
+                        "matched_aliases": matched_aliases,
+                    }
+                )
+        if not detected_characters:
+            detected_characters = [card for card in cards.get("character_cards", []) if isinstance(card, dict)]
+
+        scene_card = next((card for card in cards.get("scene_cards", []) if isinstance(card, dict)), {})
+        dialogue_candidates_detailed = self._extract_dialogue_candidates(cleaned_source_lines, detected_characters, brief)
+        dialogue_candidates = self._unique_texts(
+            [str(item.get("text") or "").strip() for item in dialogue_candidates_detailed]
+            + [str(brief.get("memorable_line") or "").strip()]
+        )
+        scene_anchors = self._extract_scene_anchors(cleaned_source_lines, brief, scene_card)
+        conflict_points = self._extract_conflict_points(cleaned_source_lines, brief)
+        character_relationships = self._extract_character_relationships(cleaned_source_lines, detected_characters)
+        story_chunks = self._build_story_chunks("\n".join(cleaned_source_lines), brief)
+        narration_candidates = self._unique_texts(
+            [
+                str(brief.get("world_rule") or "").strip(),
+                *scene_anchors[:1],
+                *conflict_points[:1],
+            ]
+        )
+        return {
+            "chapter": int(brief["chapter"]),
+            "title": brief["title"],
+            "source_title": self.source_title,
+            "scene": {
+                "scene_id": str(scene_card.get("scene_id") or "primary_world"),
+                "name": str(scene_card.get("name") or f"{self.source_title} 主场景基线"),
+                "baseline_prompt": str(scene_card.get("baseline_prompt") or asset_lock.scene_baseline_prompt).strip(),
+                "reference_image_path": scene_card.get("reference_image_path"),
+            },
+            "characters": detected_characters,
+            "character_names": [str(item.get("name") or "").strip() for item in detected_characters if str(item.get("name") or "").strip()],
+            "source_excerpt": source_excerpt,
+            "cleaned_source_lines": cleaned_source_lines,
+            "scene_anchors": scene_anchors,
+            "conflict_points": conflict_points,
+            "dialogue_candidates_detailed": dialogue_candidates_detailed,
+            "character_relationships": character_relationships,
+            "story_chunks": story_chunks,
+            "dialogue_candidates": dialogue_candidates,
+            "narration_candidates": narration_candidates,
+            "world_rules": [str(brief.get("world_rule") or "").strip()] if str(brief.get("world_rule") or "").strip() else [],
+            "facts": self._unique_texts(
+                [
+                    str(brief.get("summary") or "").strip(),
+                    str(brief.get("key_scene") or "").strip(),
+                    *scene_anchors,
+                    *conflict_points,
+                ]
+            ),
+        }
+
+    def _clean_source_lines(self, source_text: str) -> list[str]:
+        raw_lines = re.split(r"[\r\n]+", str(source_text or ""))
+        cleaned: list[str] = []
+        for raw_line in raw_lines:
+            line = re.sub(r"\s+", " ", str(raw_line or "")).strip()
+            line = re.sub(r"\s*\d+\s*$", "", line)
+            line = line.strip(" \t-—")
+            if not line:
+                continue
+            if len(line) <= 2 and not re.search(r"[“\"「『].+[”\"」』]", line):
+                continue
+            if re.fullmatch(r"[级別等级：: ]+", line):
+                continue
+            cleaned.append(line)
+        return cleaned
+
+    def _unique_texts(self, values: list[str]) -> list[str]:
+        unique: list[str] = []
+        seen: set[str] = set()
+        for value in values:
+            item = self._condense_text(str(value or "").strip(), limit=48)
+            if not item or item in seen:
+                continue
+            seen.add(item)
+            unique.append(item)
+        return unique
+
+    def _extract_line_characters(self, line: str, detected_characters: list[dict[str, Any]]) -> list[str]:
+        lowered_line = str(line or "").lower()
+        names: list[str] = []
+        for character in detected_characters:
+            canonical = str(character.get("name") or "").strip()
+            aliases = [canonical, *[str(alias).strip() for alias in character.get("aliases", []) if str(alias).strip()]]
+            if any(alias and alias.lower() in lowered_line for alias in aliases):
+                if canonical and canonical not in names:
+                    names.append(canonical)
+        return names
+
+    def _extract_dialogue_candidates(self, cleaned_source_lines: list[str], detected_characters: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
+        candidates: list[dict[str, Any]] = []
+        quote_pattern = re.compile(r"[“\"「『](.+?)[”\"」』]")
+        for index, line in enumerate(cleaned_source_lines, start=1):
+            matches = [self._condense_text(item, limit=36) for item in quote_pattern.findall(line)]
+            matches = [item for item in matches if item and len(item) >= 4]
+            if not matches:
+                continue
+            line_characters = self._extract_line_characters(line, detected_characters)
+            speaker = line_characters[0] if line_characters else ""
+            for text in matches:
+                candidates.append(
+                    {
+                        "text": text,
+                        "speaker": speaker,
+                        "source": "quoted_dialogue",
+                        "line_index": index,
+                        "context": line,
+                    }
+                )
+        memorable_line = self._normalize_dialogue_text(str(brief.get("memorable_line") or "").strip())
+        if memorable_line and memorable_line not in {item["text"] for item in candidates}:
+            candidates.append(
+                {
+                    "text": memorable_line,
+                    "speaker": self._default_dialogue_speaker("高潮"),
+                    "source": "brief_memorable_line",
+                    "line_index": 0,
+                    "context": str(brief.get("summary") or "").strip(),
+                }
+            )
+        return candidates
+
+    def _extract_scene_anchors(self, cleaned_source_lines: list[str], brief: dict[str, Any], scene_card: dict[str, Any]) -> list[str]:
+        keywords = ("广场", "台", "席", "大殿", "宿舍", "走廊", "石碑", "洞府", "擂台", "房间", "门外")
+        anchors = [
+            self._condense_text(line, limit=42)
+            for line in cleaned_source_lines
+            if any(keyword in line for keyword in keywords)
+        ]
+        anchors.extend(
+            [
+                self._condense_text(str(scene_card.get("name") or "").strip(), limit=42),
+                self._condense_text(str(brief.get("key_scene") or "").strip(), limit=42),
+            ]
+        )
+        return self._unique_texts(anchors)
+
+    def _extract_conflict_points(self, cleaned_source_lines: list[str], brief: dict[str, Any]) -> list[str]:
+        keywords = ("哄笑", "嘲", "冷声", "压住", "逼", "怒", "羞辱", "失控", "拳", "发白", "三段")
+        points = [
+            self._condense_text(line, limit=42)
+            for line in cleaned_source_lines
+            if any(keyword in line for keyword in keywords)
+        ]
+        points.append(self._condense_text(str(brief.get("summary") or "").strip(), limit=42))
+        return self._unique_texts(points)
+
+    def _extract_character_relationships(self, cleaned_source_lines: list[str], detected_characters: list[dict[str, Any]]) -> list[str]:
+        relationships: list[str] = []
+        for line in cleaned_source_lines:
+            mentioned = self._extract_line_characters(line, detected_characters)
+            if len(mentioned) >= 2:
+                relationships.append(f"{mentioned[0]} 与 {mentioned[1]}：{self._condense_text(line, limit=36)}")
+            elif "哥哥" in line and mentioned:
+                relationships.append(f"{mentioned[0]}：{self._condense_text(line, limit=36)}")
+        return self._unique_texts(relationships)
+
+    def _derive_blueprint_target_duration(self, brief: dict[str, Any], grounding: dict[str, Any]) -> float:
+        chapter_target = self._chapter_target_duration(brief)
+        if chapter_target is not None:
+            return round(chapter_target, 1)
+        source_excerpt = str(grounding.get("source_excerpt") or "")
+        character_count = len(grounding.get("character_names", []))
+        complexity = (
+            character_count
+            + len(grounding.get("conflict_points", []))
+            + min(2, len(grounding.get("dialogue_candidates", [])))
+            + (1 if grounding.get("world_rules") else 0)
+        )
+        estimated = 42.0 + min(36.0, len(source_excerpt) / 65.0) + complexity * 3.5
+        return round(max(45.0, min(90.0, estimated)), 1)
+
+    def _derive_blueprint_shot_count(self, grounding: dict[str, Any]) -> int:
+        if self.explicit_shot_count:
+            return max(6, min(12, int(self.shot_count)))
+        source_excerpt = str(grounding.get("source_excerpt") or "")
+        character_count = len(grounding.get("character_names", []))
+        estimated = 6 + min(4, max(0, len(source_excerpt) // 220)) + min(2, max(0, character_count - 1))
+        return max(6, min(12, int(estimated)))
+
+    def _derive_blueprint_keyframe_count(self, shot_count: int) -> int:
+        if self.explicit_keyframe_count:
+            return max(3, min(5, int(self.keyframe_count)))
+        return max(3, min(5, math.ceil(shot_count / 3)))
+
+    def _blueprint_present_characters(self, beat: str, roles: dict[str, Any], detected_names: list[str]) -> list[str]:
+        lead = roles.get("lead")
+        support = roles.get("support")
+        rival = roles.get("rival")
+        present: list[str] = []
+        if "关系建立" in beat and support is not None:
+            present = [character.name for character in (lead, support) if character is not None]
+        elif ("冲突" in beat or "高潮" in beat) and rival is not None:
+            present = [character.name for character in (lead, rival) if character is not None]
+        elif lead is not None:
+            present = [lead.name]
+        if not present:
+            present = [name for name in detected_names if name and name != "旁白"][:2]
+        deduped: list[str] = []
+        for item in present:
+            if item and item not in deduped:
+                deduped.append(item)
+        return deduped
+
+    def _blueprint_speaker(self, beat: str, shot_index: int, shot_count: int, roles: dict[str, Any], present_characters: list[str]) -> str:
+        narrator = roles.get("narrator")
+        lead = roles.get("lead")
+        support = roles.get("support")
+        rival = roles.get("rival")
+        if "高潮前停顿" in beat:
+            return ""
+        if "关系建立" in beat and support is not None:
+            return support.name if shot_index % 2 == 0 else (lead.name if lead is not None else support.name)
+        if ("冲突" in beat or "高潮" in beat) and rival is not None:
+            return lead.name if shot_index < max(1, shot_count - 1) else rival.name
+        if narrator is not None and "结尾" in beat and not present_characters:
+            return narrator.name
+        return lead.name if lead is not None else (present_characters[0] if present_characters else "")
+
+    def _blueprint_narration(self, *, brief: dict[str, Any], beat: str, content: str, has_dialogue: bool, shot_index: int, total_shots: int) -> str:
+        if has_dialogue and shot_index not in {1, total_shots} and "世界规则" not in content:
+            return ""
+        if shot_index == 1 or "开场钩子" in beat:
+            return self._compose_compact_text(str(brief.get("summary") or "").strip(), content, limit=36)
+        if "高潮前停顿" in beat and str(brief.get("world_rule") or "").strip():
+            return str(brief.get("world_rule") or "").strip()
+        if shot_index == total_shots:
+            return self._compose_compact_text(content, "余波未散，新的悬念已经落下。", limit=34)
+        return ""
+
+    def _build_storyboard_blueprint(self, brief: dict[str, Any], grounding: dict[str, Any], feedback: list[str] | None = None) -> dict[str, Any]:
+        profile_blocks = self.storyboard_profile.get("group_style_blocks", [])
+        beats = [str(block.get("beat") or "") for block in profile_blocks if str(block.get("beat") or "").strip()]
+        if not beats:
+            beats = ["开场钩子", "关系建立", "冲突升级", "高潮前停顿", "高潮", "结尾反转/尾钩"]
+        shot_count = self._derive_blueprint_shot_count(grounding)
+        keyframe_count = self._derive_blueprint_keyframe_count(shot_count)
+        target_duration_seconds = self._derive_blueprint_target_duration(grounding)
+        roles = self._story_role_characters()
+        detected_names = list(grounding.get("character_names", []))
+        durations = build_fallback_shot_distribution(
+            group_durations=[target_duration_seconds / len(beats)] * len(beats),
+            shot_count=shot_count,
+        )
+        story_chunks = list(grounding.get("story_chunks", [])) or self._build_story_chunks(str(grounding.get("source_excerpt") or ""), brief)
+        shots: list[dict[str, Any]] = []
+        cursor = 0.0
+        shot_no = 1
+        for beat_index, beat in enumerate(beats, start=1):
+            local_count = durations[beat_index - 1] if beat_index - 1 < len(durations) else 1
+            beat_shot_count = max(1, int(local_count))
+            duration_per_shot = round((target_duration_seconds / shot_count), 1)
+            for local_index in range(beat_shot_count):
+                chunk = story_chunks[min(len(story_chunks) - 1, shot_no - 1)] if story_chunks else str(brief.get("summary") or "")
+                stage_block = profile_blocks[min(beat_index - 1, len(profile_blocks) - 1)] if profile_blocks else {}
+                present_characters = self._blueprint_present_characters(beat, roles, detected_names)
+                speaker = self._blueprint_speaker(beat, local_index, beat_shot_count, roles, present_characters)
+                dialogue = ""
+                if speaker:
+                    if "高潮" in beat and str(brief.get("memorable_line") or "").strip():
+                        dialogue = str(brief.get("memorable_line") or "").strip()
+                    elif "关系建立" in beat and roles.get("support") is not None:
+                        dialogue = "先别急着出手，让我确认这里到底哪里不对。"
+                    elif "冲突" in beat:
+                        dialogue = "再退一步，局面就真的压不住了。"
+                    elif shot_no == 1:
+                        dialogue = "这火不对劲。"
+                    elif shot_no == shot_count:
+                        dialogue = "这件事，还没结束。"
+                content = self._compose_compact_text(
+                    chunk,
+                    str(stage_block.get("focus") or brief.get("key_scene") or brief.get("summary") or "").strip(),
+                    limit=42,
+                )
+                narration = self._blueprint_narration(
+                    brief=brief,
+                    beat=beat,
+                    content=content,
+                    has_dialogue=bool(dialogue),
+                    shot_index=shot_no,
+                    total_shots=shot_count,
+                )
+                shots.append(
+                    {
+                        "shot": shot_no,
+                        "beat": beat,
+                        "scene": self._build_stage_scene_label(brief, beat_index, beat),
+                        "duration_seconds": duration_per_shot,
+                        "start_seconds": round(cursor, 1),
+                        "end_seconds": round(cursor + duration_per_shot, 1),
+                        "speaker": speaker,
+                        "present_characters": present_characters,
+                        "content": content,
+                        "performance": self._build_group_performance(brief, stage_block, beat_index, local_index),
+                        "dialogue": dialogue,
+                        "narration": narration,
+                        "audio_design": self._build_group_audio_beat(beat),
+                        "music": self._build_group_music(brief, stage_block, beat_index),
+                        "shot_size": self._pick_group_value(stage_block.get("size_candidates", ["中景"]), local_index, fallback="中景"),
+                        "camera_move": self._pick_group_value(stage_block.get("movement_candidates", ["缓推"]), local_index, fallback="缓推"),
+                        "priority": max(1, 6 - local_index),
+                    }
+                )
+                cursor += duration_per_shot
+                shot_no += 1
+                if shot_no > shot_count:
+                    break
+            if shot_no > shot_count:
+                break
+        return {
+            "chapter": int(brief["chapter"]),
+            "title": brief["title"],
+            "target_duration_seconds": target_duration_seconds,
+            "shot_count": shot_count,
+            "keyframe_count": keyframe_count,
+            "feedback": list(feedback or []),
+            "scene": grounding.get("scene", {}),
+            "character_names": detected_names,
+            "shots": shots,
+        }
+
+    def _fallback_storyboard_from_blueprint(self, brief: dict[str, Any], blueprint: dict[str, Any]) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for shot in blueprint.get("shots", []):
+            if not isinstance(shot, dict):
+                continue
+            rows.append(
+                {
+                    "分组": f"第{max(1, math.ceil(int(shot['shot']) / 2))}组",
+                    "15秒段": f"{shot['start_seconds']}-{shot['end_seconds']}秒",
+                    "镜头号": int(shot["shot"]),
+                    "时长(s)": float(shot["duration_seconds"]),
+                    "起始时间": float(shot["start_seconds"]),
+                    "结束时间": float(shot["end_seconds"]),
+                    "场景/时间": str(shot.get("scene") or ""),
+                    "镜头景别": str(shot.get("shot_size") or "中景"),
+                    "镜头运动": str(shot.get("camera_move") or "缓推"),
+                    "画面内容": str(shot.get("content") or ""),
+                    "人物动作/神态": str(shot.get("performance") or brief.get("emotion") or ""),
+                    "旁白": str(shot.get("narration") or ""),
+                    "对白角色": str(shot.get("speaker") or ""),
+                    "对白": str(shot.get("dialogue") or ""),
+                    "台词对白": str(shot.get("dialogue") or ""),
+                    "角色": "、".join(shot.get("present_characters", [])),
+                    "出镜角色": "、".join(shot.get("present_characters", [])),
+                    "音效": str(shot.get("audio_design") or self._build_group_audio_beat(str(shot.get("beat") or ""))),
+                    "音频设计": str(shot.get("audio_design") or ""),
+                    "音乐": str(shot.get("music") or brief.get("emotion") or ""),
+                    "节奏目的": str(shot.get("beat") or ""),
+                    "关键帧优先级": int(shot.get("priority") or 3),
+                    "blueprint_shot_count": int(blueprint.get("shot_count") or self.shot_count),
+                    "blueprint_keyframe_count": int(blueprint.get("keyframe_count") or self.keyframe_count),
+                }
+            )
+        return self._normalize_storyboard_rows(rows, brief)
+
+    def _generate_storyboard(
+        self,
+        brief: dict[str, Any],
+        source_text: str,
+        feedback: list[str],
+        *,
+        grounding: dict[str, Any],
+        blueprint: dict[str, Any],
+        fallback: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         candidate_rows = fallback
         if not self.use_model_storyboard or self.text_provider is None:
             return self._apply_storyboard_feedback(brief, candidate_rows, feedback)
@@ -317,12 +838,14 @@ class ChapterFactoryRunner:
             "质量宪章": build_quality_prompt(),
             "章节摘要": brief,
             "原文节选": source_text[:1800] if source_text else "无",
+            "story_grounding": grounding,
+            "storyboard_blueprint": blueprint,
             "参考模板": self.storyboard_profile,
             "返工意见": feedback or ["无"],
             "输出要求": {
-                "shot_count": self.shot_count,
+                "shot_count": int(blueprint.get("shot_count") or self.shot_count),
                 "fields": self.storyboard_profile["required_fields"] + ["旁白", "对白角色", "对白", "音频设计", "音乐", "节奏目的", "关键帧优先级"],
-                "notes": "只返回 JSON 数组，不要解释；按章节内容可支撑的时长出片，默认以 60 秒为最小 smoke test 单元，不为凑时长重复镜头；必须保留名台词、世界观规则和关键场面；不要在场景字段里写第几章、第几组、时间卡或场景标题污染。",
+                "notes": "只返回 JSON 数组，不要解释；按章节内容可支撑的时长出片，默认以 60 秒为最小 smoke test 单元，不为凑时长重复镜头；必须保留名台词、世界观规则和关键场面；不要在场景字段里写第几章、第几组、时间卡或场景标题污染；对白角色和出镜角色只能使用 story_grounding / storyboard_blueprint 已确认的真实角色名，不能输出主角、同伴、对手这类槽位词。",
             },
         }
         try:
@@ -387,6 +910,7 @@ class ChapterFactoryRunner:
         return prompts, paths
 
     def _review_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], audio_plan: dict[str, Any]) -> dict[str, Any]:
+        asset_lock = self._current_asset_lock()
         joined = json.dumps(storyboard_rows, ensure_ascii=False)
         blockers: list[str] = []
         issues: list[str] = []
@@ -461,7 +985,27 @@ class ChapterFactoryRunner:
             for fallback_rows in [self._fallback_storyboard(item, self.source_map.get(int(item["chapter"]), ""))]
         )
         screenplay_path.write_text("\n\n".join(screenplay_lines), encoding="utf-8")
-        art_path.write_text("\n".join([f"# 美术设定：{self.source_title}", "", f"- 主视觉风格：{self.visual_style}", "- 所有章节必须保持人设一致、色彩统一、关键场面有明确视觉符号。", "- 分镜遵循节奏组块化设计，每章必须有开场钩子、冲突升级、高潮和尾钩。", "- 章节视频必须含画面、旁白/配音、配乐底噪与字幕信息层。"]), encoding="utf-8")
+        asset_lock_summary = self._asset_lock_summary()
+        art_lines = [
+            f"# 美术设定：{self.source_title}",
+            "",
+            f"- 主视觉风格：{self.visual_style}",
+            "- 所有章节必须保持人设一致、色彩统一、关键场面有明确视觉符号。",
+            "- 分镜遵循节奏组块化设计，每章必须有开场钩子、冲突升级、高潮和尾钩。",
+            "- 章节视频必须含画面、旁白/配音、配乐底噪与字幕信息层。",
+            "",
+            "## 资产锁摘要",
+            "",
+            f"- 场景基线：{asset_lock_summary['scene']['baseline_prompt'] or '未配置'}",
+        ]
+        art_lines.extend(
+            f"- 角色 {item['name']}：voice_id={item['voice_id'] or '未配置'}；fixed_prompt={item['fixed_prompt'] or '未配置'}"
+            for item in asset_lock_summary["characters"]
+        )
+        if asset_lock_summary["validation_errors"]:
+            art_lines.append("- 待修复引用：")
+            art_lines.extend(f"- {item}" for item in asset_lock_summary["validation_errors"])
+        art_path.write_text("\n".join(art_lines), encoding="utf-8")
 
     def _write_lead_character(self, prompt: str, output_path: Path) -> None:
         if self.provider is not None:
@@ -536,7 +1080,15 @@ class ChapterFactoryRunner:
     def _normalize_storyboard_rows(self, rows: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
         normalized: list[dict[str, Any]] = []
         cursor = 0.0
-        for index, row in enumerate(rows[: self.shot_count], start=1):
+        shot_limit = next(
+            (
+                int(row.get("blueprint_shot_count") or 0)
+                for row in rows
+                if int(row.get("blueprint_shot_count") or 0) > 0
+            ),
+            int(self.shot_count),
+        )
+        for index, row in enumerate(rows[: shot_limit], start=1):
             duration = max(0.8, float(row.get("时长(s)", row.get("duration", 1.2)) or 1.2))
             end_time = round(cursor + duration, 1)
             beat = str(row.get("节奏目的", "冲突推进"))
@@ -544,8 +1096,15 @@ class ChapterFactoryRunner:
             if not scene_value or re.search(r"第\d+章|第\d+组|\d+秒|scene|chapter", scene_value, flags=re.IGNORECASE):
                 scene_value = self._build_stage_scene_label(brief, min(6, math.ceil(index / 2)), beat)
             dialogue = str(row.get("对白", row.get("台词对白", "—"))).strip() or "—"
-            narration = str(row.get("旁白", "")).strip() or self._build_group_narration(brief, beat, str(row.get("画面内容", brief["key_scene"])))
-            speaker = str(row.get("对白角色", row.get("角色", self._default_dialogue_speaker(beat)))).strip() or self._default_dialogue_speaker(beat)
+            narration = str(row.get("旁白", "")).strip()
+            if not narration and dialogue in {"", "—"} and index == 1:
+                narration = self._build_group_narration(brief, beat, str(row.get("画面内容", brief["key_scene"])))
+            speaker = self._canonicalize_character_name(
+                str(row.get("对白角色", row.get("角色", self._default_dialogue_speaker(beat)))).strip()
+                or self._default_dialogue_speaker(beat)
+            )
+            present_characters = self._normalize_present_characters(row=row, speaker=speaker, beat=beat)
+            canonical_role_text = "、".join(present_characters) if present_characters else str(row.get("角色", self.source_title))
             normalized.append(
                 {
                     "分组": str(row.get("分组", f"第{min(6, math.ceil(index / 2))}组")),
@@ -563,16 +1122,74 @@ class ChapterFactoryRunner:
                     "对白角色": speaker,
                     "对白": dialogue,
                     "台词对白": dialogue,
-                    "角色": str(row.get("角色", self.source_title)),
+                    "角色": canonical_role_text,
+                    "出镜角色": "、".join(present_characters),
                     "音效": str(row.get("音效", "氛围环境声")),
                     "音频设计": str(row.get("音频设计", self._build_group_audio_beat(beat))),
                     "音乐": str(row.get("音乐", brief["emotion"])),
                     "节奏目的": beat,
                     "关键帧优先级": self._coerce_priority(row.get("关键帧优先级", 3), default=3),
+                    "blueprint_shot_count": int(row.get("blueprint_shot_count") or shot_limit),
+                    "blueprint_keyframe_count": int(row.get("blueprint_keyframe_count") or self.keyframe_count),
                 }
             )
             cursor = end_time
         return normalized or self._fallback_storyboard(brief, "")
+
+    def _normalize_present_characters(self, *, row: dict[str, Any], speaker: str, beat: str) -> list[str]:
+        asset_lock = self._current_asset_lock()
+        explicit_tokens = split_character_tokens(str(row.get("出镜角色", "")).strip())
+        inferred_tokens = split_character_tokens(str(row.get("角色", "")).strip())
+        if speaker and speaker not in {"", "—", "无", "旁白"}:
+            inferred_tokens.append(speaker)
+        candidates = explicit_tokens or inferred_tokens
+        if not candidates and asset_lock.lead_character() is not None:
+            candidates = [asset_lock.lead_character().name]
+
+        if asset_lock.exists:
+            resolved = asset_lock.resolve_many(candidates)
+            if resolved:
+                return [character.name for character in resolved]
+            if explicit_tokens or candidates:
+                return []
+            return self._default_present_characters_for_beat(asset_lock=asset_lock, beat=beat, speaker=speaker)
+
+        deduped: list[str] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            token = str(candidate).strip()
+            if not token or token in seen:
+                continue
+            seen.add(token)
+            deduped.append(token)
+        return deduped
+
+    def _default_present_characters_for_beat(self, *, asset_lock: AssetLock, beat: str, speaker: str) -> list[str]:
+        speaker_character = asset_lock.resolve_character(speaker)
+        if speaker_character is not None and speaker_character.name != "旁白":
+            return [speaker_character.name]
+
+        roles = self._story_role_characters()
+        lead = roles.get("lead")
+        support = roles.get("support")
+        rival = roles.get("rival")
+
+        candidates: list[str] = []
+        if "关系建立" in beat:
+            candidates = [character.name for character in (lead, support) if character is not None]
+        elif "冲突" in beat or "高潮" in beat:
+            candidates = [character.name for character in (lead, rival) if character is not None]
+        else:
+            candidates = [lead.name] if lead is not None else []
+
+        deduped: list[str] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            deduped.append(candidate)
+        return deduped
 
     def _coerce_priority(self, value: Any, default: int = 3) -> int:
         try:
@@ -813,25 +1430,32 @@ class ChapterFactoryRunner:
         return self._build_group_dialogue_payload(brief, stage_block, group_index, local_index, group_count)["dialogue"]
 
     def _default_dialogue_speaker(self, beat: str) -> str:
-        if beat in {"冲突升级", "高潮"}:
-            return "主角"
-        if beat == "关系建立":
-            return "同伴"
-        return "旁白"
+        roles = self._story_role_characters()
+        if beat in {"冲突升级", "高潮"} and roles.get("lead") is not None:
+            return roles["lead"].name
+        if beat == "关系建立" and roles.get("support") is not None:
+            return roles["support"].name
+        narrator = roles.get("narrator")
+        return narrator.name if narrator is not None else ""
 
     def _resolve_dialogue_speaker(self, *, beat: str, local_index: int, group_count: int) -> str:
+        roles = self._story_role_characters()
+        lead = roles.get("lead")
+        support = roles.get("support")
+        rival = roles.get("rival")
+        narrator = roles.get("narrator")
         if beat == "开场钩子":
-            return "主角" if local_index == 0 else "旁白"
+            return lead.name if local_index == 0 and lead is not None else (narrator.name if narrator is not None else "")
         if beat == "关系建立":
-            return "同伴" if local_index % 2 == 0 else "主角"
+            return support.name if local_index % 2 == 0 and support is not None else (lead.name if lead is not None else "")
         if beat == "冲突升级":
-            return "主角" if local_index % 2 == 0 else "对手"
+            return lead.name if local_index % 2 == 0 and lead is not None else (rival.name if rival is not None else "")
         if beat == "高潮前停顿":
-            return "旁白"
+            return ""
         if beat == "高潮":
-            return "主角" if local_index < max(1, group_count - 1) else "对手"
+            return lead.name if local_index < max(1, group_count - 1) and lead is not None else (rival.name if rival is not None else "")
         if beat == "尾钩":
-            return "主角"
+            return lead.name if lead is not None else ""
         return self._default_dialogue_speaker(beat)
 
     def _build_group_audio_beat(self, beat: str) -> str:
@@ -904,65 +1528,286 @@ class ChapterFactoryRunner:
         return music_map.get(beat, emotion)
 
     def _build_audio_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]]) -> dict[str, Any]:
+        asset_lock = self._current_asset_lock()
+        timing_windows = self._build_voice_timing_windows(storyboard_rows)
+        mix_profile = {
+            "dialogue_priority": 100,
+            "narration_priority": 60,
+            "ambience_priority": 20,
+            "ducking": {
+                "narration_when_dialogue": 0.4,
+                "ambience_when_dialogue": 0.6,
+            },
+            "ambience_gain": 0.18,
+        }
         cue_sheet: list[dict[str, Any]] = []
         narration_tracks: list[dict[str, Any]] = []
         dialogue_tracks: list[dict[str, Any]] = []
         voice_script_lines: list[str] = []
         last_narration = ""
         last_dialogue_pair: tuple[str, str] | None = None
+        narrator_character = asset_lock.narrator_character()
+        narration_budget = max(1, math.ceil(len(storyboard_rows) / 3))
         for row in storyboard_rows:
             shot_no = self._row_shot_no(row)
+            shot_window = timing_windows.get(
+                shot_no,
+                {
+                    "start_seconds": 0.0,
+                    "duration_seconds": self._row_duration(row),
+                    "end_seconds": self._row_duration(row),
+                },
+            )
+            shot_start = float(shot_window["start_seconds"])
+            shot_duration = max(1.0, float(shot_window["duration_seconds"]))
+            shot_end = float(shot_window["end_seconds"])
             narration = self._row_narration(row)
             dialogue = self._row_dialogue(row)
             speaker = self._row_dialogue_speaker(row)
+            speaker_character = asset_lock.resolve_character(speaker)
+            has_dialogue = dialogue and dialogue not in {"-", "—", "无"}
+            generated_narration = self._build_group_narration(brief, self._row_pace(row), self._row_content(row))
+            narration_is_auto_fill = narration == generated_narration
+            world_rule_text = str(brief.get("world_rule") or "").strip()
+            contains_world_rule = bool(world_rule_text and world_rule_text in narration)
+            keep_narration = bool(narration and narration not in {"-", "—", "无"}) and (
+                not has_dialogue
+                or not narration_is_auto_fill
+                or shot_no == 1
+                or self._row_pace(row) in {"开场钩子", "高潮前停顿", "结尾反转/尾钩", "尾钩"}
+                or contains_world_rule
+            )
+            if has_dialogue and narration_is_auto_fill and shot_no not in {1, len(storyboard_rows)}:
+                narration = ""
+            if (
+                keep_narration
+                and has_dialogue
+                and len(narration_tracks) >= narration_budget
+                and not contains_world_rule
+                and self._row_pace(row) not in {"高潮前停顿", "结尾反转/尾钩", "尾钩"}
+            ):
+                narration = ""
+                keep_narration = False
             cue_sheet.append(
                 {
                     "shot": shot_no,
-                    "duration_seconds": self._row_duration(row),
+                    "duration_seconds": shot_duration,
                     "beat": self._row_pace(row),
                     "narration": narration,
                     "dialogue": dialogue,
                     "speaker": speaker,
+                    "canonical_character": speaker_character.name if speaker_character else None,
+                    "voice_id": speaker_character.voice_id if speaker_character else None,
                     "sfx": str(row.get("音效", "氛围环境声")),
                     "music": str(row.get("音乐", brief["emotion"])),
                     "audio_design": str(row.get("音频设计", self._build_group_audio_beat(self._row_pace(row)))),
                 }
             )
-            if narration and narration not in {"-", "—", "无"}:
+            narration_track: dict[str, Any] | None = None
+            if keep_narration and narration and narration not in {"-", "—", "无"}:
                 if narration != last_narration:
-                    narration_tracks.append({"shot": shot_no, "text": narration})
+                    narration_target = min(
+                        max(1.0, self._estimate_voice_duration(narration)),
+                        max(1.0, shot_duration * (0.45 if has_dialogue else 0.7)),
+                    )
+                    narration_track = {
+                        "shot": shot_no,
+                        "text": narration,
+                        "canonical_character": narrator_character.name if narrator_character else "旁白",
+                        "voice_id": narrator_character.voice_id if narrator_character else None,
+                        "start_seconds": round(shot_start, 3),
+                        "target_duration_seconds": round(narration_target, 3),
+                        "end_seconds": round(shot_start + narration_target, 3),
+                        "track_role": "narration",
+                        "bus": "narration_bus",
+                        "priority": mix_profile["narration_priority"],
+                        "duck_target": "dialogue_bus",
+                        "mix_gain": 0.96,
+                    }
+                    narration_tracks.append(narration_track)
                     voice_script_lines.append(f"旁白：{narration}")
                     last_narration = narration
             if dialogue and dialogue not in {"-", "—", "无"}:
                 dialogue_pair = (speaker, dialogue)
                 if dialogue_pair != last_dialogue_pair:
-                    dialogue_tracks.append({"shot": shot_no, "speaker": speaker, "text": dialogue})
+                    dialogue_start = shot_start
+                    if narration_track is not None and not narration_is_auto_fill:
+                        dialogue_start = max(
+                            shot_start,
+                            min(shot_end - 0.8, float(narration_track["end_seconds"]) + 0.2),
+                        )
+                    dialogue_target = min(
+                        max(1.0, self._estimate_voice_duration(dialogue)),
+                        max(1.0, shot_end - dialogue_start),
+                    )
+                    dialogue_tracks.append(
+                        {
+                            "shot": shot_no,
+                            "speaker": speaker,
+                            "text": dialogue,
+                            "canonical_character": speaker_character.name if speaker_character else None,
+                            "voice_id": speaker_character.voice_id if speaker_character else None,
+                            "start_seconds": round(dialogue_start, 3),
+                            "target_duration_seconds": round(dialogue_target, 3),
+                            "end_seconds": round(dialogue_start + dialogue_target, 3),
+                            "track_role": "dialogue",
+                            "bus": "dialogue_bus",
+                            "priority": mix_profile["dialogue_priority"],
+                            "duck_target": "",
+                            "mix_gain": 1.0,
+                        }
+                    )
                     voice_script_lines.append(f"{speaker}：{dialogue}")
                     last_dialogue_pair = dialogue_pair
 
         if not narration_tracks:
             fallback_narration = self._condense_text(brief["summary"], limit=48) or brief["summary"]
-            narration_tracks.append({"shot": 1, "text": fallback_narration})
+            fallback_target = min(
+                max(1.5, self._estimate_voice_duration(fallback_narration)),
+                max(2.0, float(self.target_duration_seconds) * 0.4),
+            )
+            narration_tracks.append(
+                {
+                    "shot": 1,
+                    "text": fallback_narration,
+                    "canonical_character": narrator_character.name if narrator_character else "旁白",
+                    "voice_id": narrator_character.voice_id if narrator_character else None,
+                    "start_seconds": 0.0,
+                    "target_duration_seconds": round(fallback_target, 3),
+                    "end_seconds": round(fallback_target, 3),
+                    "track_role": "narration",
+                    "bus": "narration_bus",
+                    "priority": mix_profile["narration_priority"],
+                    "duck_target": "dialogue_bus",
+                    "mix_gain": 0.96,
+                }
+            )
             voice_script_lines.append(f"旁白：{fallback_narration}")
 
         if not dialogue_tracks and brief.get("memorable_line"):
             memorable_line = str(brief["memorable_line"]).strip()
-            dialogue_tracks.append({"shot": max(1, len(storyboard_rows) // 2), "speaker": "主角", "text": memorable_line})
-            voice_script_lines.append(f"主角：{memorable_line}")
+            lead_character = asset_lock.lead_character()
+            shot_index = max(0, len(storyboard_rows) // 2 - 1)
+            shot_no = max(1, len(storyboard_rows) // 2)
+            if storyboard_rows:
+                shot_no = self._row_shot_no(storyboard_rows[shot_index])
+            shot_window = timing_windows.get(
+                shot_no,
+                {
+                    "start_seconds": max(0.0, float(self.target_duration_seconds) / 2.0 - 1.5),
+                    "duration_seconds": 3.0,
+                    "end_seconds": max(3.0, float(self.target_duration_seconds) / 2.0 + 1.5),
+                },
+            )
+            dialogue_target = min(
+                max(1.2, self._estimate_voice_duration(memorable_line)),
+                max(1.2, float(shot_window["duration_seconds"])),
+            )
+            dialogue_tracks.append(
+                {
+                    "shot": shot_no,
+                    "speaker": lead_character.name if lead_character else "",
+                    "text": memorable_line,
+                    "canonical_character": lead_character.name if lead_character else None,
+                    "voice_id": lead_character.voice_id if lead_character else None,
+                    "start_seconds": round(float(shot_window["start_seconds"]), 3),
+                    "target_duration_seconds": round(dialogue_target, 3),
+                    "end_seconds": round(float(shot_window["start_seconds"]) + dialogue_target, 3),
+                    "track_role": "dialogue",
+                    "bus": "dialogue_bus",
+                    "priority": mix_profile["dialogue_priority"],
+                    "duck_target": "",
+                    "mix_gain": 1.0,
+                }
+            )
+            voice_script_lines.append(f"{lead_character.name if lead_character else '角色'}：{memorable_line}")
 
         voice_script_lines = self._dedupe_preserve_order(voice_script_lines)
         narration_script = "\n".join(track["text"] for track in narration_tracks if track.get("text")).strip()
         voice_script = "\n".join(line for line in voice_script_lines if line).strip() or narration_script
+        voice_tracks = sorted(
+            [*narration_tracks, *dialogue_tracks],
+            key=lambda item: (
+                float(item.get("start_seconds", 0.0) or 0.0),
+                0 if item.get("track_role") == "narration" else 1,
+                int(item.get("shot", 0) or 0),
+            ),
+        )
         return {
-            "voice_style": DEFAULT_TTS_VOICE,
+            "render_mode": "timeline_multitrack",
+            "voice_style": narrator_character.voice_id if narrator_character and narrator_character.voice_id else DEFAULT_TTS_VOICE,
             "music_mood": brief["emotion"],
+            "mix_profile": mix_profile,
+            "total_duration_seconds": round(sum(float(self._row_duration(row)) for row in storyboard_rows), 3),
             "sfx": [{"shot": row["shot"], "cue": row["sfx"]} for row in cue_sheet],
             "cue_sheet": cue_sheet,
             "narration_tracks": narration_tracks,
             "dialogue_tracks": dialogue_tracks,
+            "voice_tracks": voice_tracks,
+            "voice_track_count": len(voice_tracks),
             "voice_script": voice_script,
             "narration_script": narration_script or voice_script,
         }
+
+    def _build_voice_timing_windows(self, storyboard_rows: list[dict[str, Any]]) -> dict[int, dict[str, float]]:
+        cursor = 0.0
+        windows: dict[int, dict[str, float]] = {}
+        for row in storyboard_rows:
+            shot_no = self._row_shot_no(row)
+            duration = max(1.0, self._row_duration(row))
+            windows[shot_no] = {
+                "start_seconds": round(cursor, 3),
+                "duration_seconds": round(duration, 3),
+                "end_seconds": round(cursor + duration, 3),
+            }
+            cursor += duration
+        return windows
+
+    def _estimate_voice_duration(self, text: str) -> float:
+        content = re.sub(r"\s+", "", str(text or "").strip())
+        if not content:
+            return 1.0
+        return min(8.0, max(1.0, len(content) * 0.28 + 0.6))
+
+    def _collect_voice_tracks(self, audio_plan: dict[str, Any], fallback_voice: str) -> list[dict[str, Any]]:
+        tracks_payload = audio_plan.get("voice_tracks")
+        if isinstance(tracks_payload, list) and tracks_payload:
+            raw_tracks = [item for item in tracks_payload if isinstance(item, dict)]
+        else:
+            raw_tracks = [
+                *[item for item in audio_plan.get("narration_tracks", []) if isinstance(item, dict)],
+                *[item for item in audio_plan.get("dialogue_tracks", []) if isinstance(item, dict)],
+            ]
+        collected: list[dict[str, Any]] = []
+        for index, item in enumerate(raw_tracks, start=1):
+            text = str(item.get("text") or "").strip()
+            if not text:
+                continue
+            track = dict(item)
+            track["text"] = text
+            track["track_role"] = str(track.get("track_role") or ("narration" if "speaker" not in track else "dialogue")).strip() or "dialogue"
+            track["voice_id"] = str(track.get("voice_id") or fallback_voice or DEFAULT_TTS_VOICE).strip() or DEFAULT_TTS_VOICE
+            track["canonical_character"] = str(track.get("canonical_character") or track.get("speaker") or track["track_role"]).strip()
+            track["start_seconds"] = round(float(track.get("start_seconds") or 0.0), 3)
+            track["target_duration_seconds"] = round(
+                max(1.0, float(track.get("target_duration_seconds") or self._estimate_voice_duration(text))),
+                3,
+            )
+            track["end_seconds"] = round(track["start_seconds"] + track["target_duration_seconds"], 3)
+            track["track_index"] = int(track.get("track_index") or index)
+            track["bus"] = str(track.get("bus") or ("narration_bus" if track["track_role"] == "narration" else "dialogue_bus")).strip()
+            track["priority"] = int(track.get("priority") or (60 if track["track_role"] == "narration" else 100))
+            track["duck_target"] = str(track.get("duck_target") or ("dialogue_bus" if track["track_role"] == "narration" else "")).strip()
+            track["mix_gain"] = float(track.get("mix_gain") or (0.96 if track["track_role"] == "narration" else 1.0))
+            collected.append(track)
+        return sorted(
+            collected,
+            key=lambda item: (
+                float(item.get("start_seconds", 0.0) or 0.0),
+                0 if item.get("track_role") == "narration" else 1,
+                int(item.get("track_index", 0) or 0),
+            ),
+        )
 
     def _dedupe_preserve_order(self, lines: list[str]) -> list[str]:
         deduped: list[str] = []
@@ -975,18 +1820,188 @@ class ChapterFactoryRunner:
             deduped.append(clean)
         return deduped
 
-    def _synthesize_voiceover(self, narration_text: str, output_path: Path) -> None:
+    def _synthesize_voiceover(self, narration_text: dict[str, Any] | str, output_path: Path, voice_style: str = DEFAULT_TTS_VOICE) -> None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(narration_text, dict):
+            audio_plan = narration_text
+            fallback_voice = str(audio_plan.get("voice_style") or voice_style or DEFAULT_TTS_VOICE).strip() or DEFAULT_TTS_VOICE
+            voice_tracks = self._collect_voice_tracks(audio_plan, fallback_voice)
+            audio_plan["render_mode"] = str(audio_plan.get("render_mode") or "timeline_multitrack")
+            if audio_plan["render_mode"] != "timeline_multitrack":
+                combined_text = str(audio_plan.get("voice_script") or audio_plan.get("narration_script") or "").strip()
+                self._synthesize_voiceover(combined_text, output_path, fallback_voice)
+                return
+            if not voice_tracks:
+                duration_seconds = max(2, int(round(float(audio_plan.get("total_duration_seconds") or 2.0))))
+                self._generate_silence_mp3(output_path, duration_seconds=duration_seconds)
+                audio_plan["voice_tracks"] = []
+                audio_plan["voice_track_count"] = 0
+                return
+            rendered_dir = output_path.parent / "voice_tracks"
+            rendered_dir.mkdir(parents=True, exist_ok=True)
+            rendered_tracks: list[dict[str, Any]] = []
+            try:
+                for track in voice_tracks:
+                    track_stem = self._sanitize_track_file_stem(
+                        f"{int(track['track_index']):02d}_{track['track_role']}_{track['canonical_character']}"
+                    )
+                    track_output_path = rendered_dir / f"{track_stem}.mp3"
+                    self._render_track_audio(track=track, output_path=track_output_path)
+                    rendered_track = dict(track)
+                    rendered_track["output_path"] = str(track_output_path)
+                    rendered_tracks.append(rendered_track)
+                self._mix_timeline_voice_tracks(rendered_tracks=rendered_tracks, output_path=output_path)
+                audio_plan["voice_tracks"] = rendered_tracks
+                audio_plan["voice_track_count"] = len(rendered_tracks)
+                return
+            except Exception as exc:
+                self.provider_notes.append(f"多角色配音混音回退为静音音轨：{exc}")
+                duration_seconds = max(2, int(round(float(audio_plan.get("total_duration_seconds") or 6.0))))
+                self._generate_silence_mp3(output_path, duration_seconds=duration_seconds)
+                return
         try:
             import edge_tts
 
             async def _save() -> None:
-                await edge_tts.Communicate(narration_text, DEFAULT_TTS_VOICE).save(str(output_path))
+                await edge_tts.Communicate(narration_text, voice_style or DEFAULT_TTS_VOICE).save(str(output_path))
 
             asyncio.run(_save())
         except Exception as exc:
             self.provider_notes.append(f"旁白回退为静音音轨：{exc}")
             self._generate_silence_mp3(output_path, duration_seconds=max(6, len(narration_text) // 12))
+
+    def _render_track_audio(self, *, track: dict[str, Any], output_path: Path) -> None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        source_path = output_path.with_name(f"{output_path.stem}_raw.mp3")
+        voice_id = str(track.get("voice_id") or DEFAULT_TTS_VOICE).strip() or DEFAULT_TTS_VOICE
+        text = str(track.get("text") or "").strip()
+        target_duration_seconds = max(1.0, float(track.get("target_duration_seconds") or self._estimate_voice_duration(text)))
+        try:
+            import edge_tts
+
+            async def _save() -> None:
+                await edge_tts.Communicate(text, voice_id).save(str(source_path))
+
+            asyncio.run(_save())
+            self._fit_track_audio_to_duration(
+                source_path=source_path,
+                output_path=output_path,
+                target_duration_seconds=target_duration_seconds,
+            )
+        except Exception as exc:
+            self.provider_notes.append(
+                f"分轨配音回退为静音音轨：{track.get('canonical_character', 'track')} -> {exc}"
+            )
+            self._generate_silence_mp3(output_path, duration_seconds=max(1, int(math.ceil(target_duration_seconds))))
+        finally:
+            source_path.unlink(missing_ok=True)
+
+    def _probe_media_duration(self, media_path: Path) -> float:
+        if not media_path.exists():
+            return 0.0
+        if Path(self.ffprobe_exe).exists():
+            try:
+                command = [
+                    self.ffprobe_exe,
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    str(media_path),
+                ]
+                result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                return max(0.0, float((result.stdout or "").strip() or 0.0))
+            except Exception:
+                return 0.0
+        return 0.0
+
+    def _build_atempo_filter_chain(self, ratio: float) -> str:
+        ratio = max(0.25, float(ratio))
+        filters: list[str] = []
+        while ratio > 2.0:
+            filters.append("atempo=2.0")
+            ratio /= 2.0
+        while ratio < 0.5:
+            filters.append("atempo=0.5")
+            ratio /= 0.5
+        filters.append(f"atempo={ratio:.4f}")
+        return ",".join(filters)
+
+    def _fit_track_audio_to_duration(self, *, source_path: Path, output_path: Path, target_duration_seconds: float) -> None:
+        actual_duration = self._probe_media_duration(source_path)
+        if actual_duration <= 0.0 or target_duration_seconds <= 0.0 or abs(actual_duration - target_duration_seconds) <= 0.2:
+            shutil.copyfile(source_path, output_path)
+            return
+        ratio = actual_duration / target_duration_seconds
+        command = [
+            self.ffmpeg_exe,
+            "-y",
+            "-i",
+            str(source_path),
+            "-filter:a",
+            self._build_atempo_filter_chain(ratio),
+            "-q:a",
+            "4",
+            "-acodec",
+            "libmp3lame",
+            str(output_path),
+        ]
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    def _mix_timeline_voice_tracks(self, *, rendered_tracks: list[dict[str, Any]], output_path: Path) -> None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        if not rendered_tracks:
+            self._generate_silence_mp3(output_path, duration_seconds=2)
+            return
+        command = [self.ffmpeg_exe, "-y"]
+        filter_parts: list[str] = []
+        narration_inputs: list[str] = []
+        dialogue_inputs: list[str] = []
+        for index, track in enumerate(rendered_tracks):
+            command.extend(["-i", str(track["output_path"])])
+            delay_ms = max(0, int(round(float(track.get("start_seconds") or 0.0) * 1000)))
+            gain = float(track.get("mix_gain") or 1.0)
+            bus = str(track.get("bus") or ("narration_bus" if track.get("track_role") == "narration" else "dialogue_bus")).strip()
+            label = f"a{index}"
+            filter_parts.append(f"[{index}:a]volume={gain:.3f},adelay={delay_ms}|{delay_ms}[{label}]")
+            if bus == "narration_bus":
+                narration_inputs.append(f"[{label}]")
+            else:
+                dialogue_inputs.append(f"[{label}]")
+
+        if dialogue_inputs:
+            filter_parts.append(f"{''.join(dialogue_inputs)}amix=inputs={len(dialogue_inputs)}:duration=longest:normalize=0[dialogue_bus]")
+        if narration_inputs:
+            filter_parts.append(f"{''.join(narration_inputs)}amix=inputs={len(narration_inputs)}:duration=longest:normalize=0[narration_bus]")
+
+        if dialogue_inputs and narration_inputs:
+            filter_parts.append("[dialogue_bus]asplit=2[dialogue_duck][dialogue_mix]")
+            filter_parts.append("[narration_bus][dialogue_duck]sidechaincompress=threshold=0.02:ratio=8:attack=10:release=250[narration_ducked]")
+            filter_parts.append("[dialogue_mix][narration_ducked]amix=inputs=2:duration=longest:normalize=0[aout]")
+        elif dialogue_inputs:
+            filter_parts.append("[dialogue_bus]anull[aout]")
+        else:
+            filter_parts.append("[narration_bus]anull[aout]")
+        command.extend(
+            [
+                "-filter_complex",
+                ";".join(filter_parts),
+                "-map",
+                "[aout]",
+                "-q:a",
+                "4",
+                "-acodec",
+                "libmp3lame",
+                str(output_path),
+            ]
+        )
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    def _sanitize_track_file_stem(self, value: str) -> str:
+        cleaned = re.sub(r"[^\w\-]+", "_", str(value or "").strip(), flags=re.UNICODE).strip("_")
+        return cleaned or "track"
 
     def _generate_ambience(self, output_path: Path, duration_seconds: float, storyboard_rows: list[dict[str, Any]]) -> None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1039,7 +2054,31 @@ class ChapterFactoryRunner:
 
     def _mux_audio(self, silent_video: Path, voiceover: Path, ambience: Path, output_path: Path) -> None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        command = [self.ffmpeg_exe, "-y", "-i", str(silent_video), "-i", str(voiceover), "-i", str(ambience), "-filter_complex", "[1:a]volume=1.0[a1];[2:a]volume=0.18[a2];[a1][a2]amix=inputs=2:duration=longest[aout]", "-map", "0:v:0", "-map", "[aout]", "-c:v", "libx264", "-c:a", "aac", "-shortest", str(output_path)]
+        command = [
+            self.ffmpeg_exe,
+            "-y",
+            "-i",
+            str(silent_video),
+            "-i",
+            str(voiceover),
+            "-i",
+            str(ambience),
+            "-filter_complex",
+            "[1:a]volume=1.0,asplit=2[voice_duck][voice_mix];"
+            "[2:a]volume=0.18[ambience_bus];"
+            "[ambience_bus][voice_duck]sidechaincompress=threshold=0.02:ratio=6:attack=8:release=300[ambience_ducked];"
+            "[voice_mix][ambience_ducked]amix=inputs=2:duration=longest:normalize=0[aout]",
+            "-map",
+            "0:v:0",
+            "-map",
+            "[aout]",
+            "-c:v",
+            "libx264",
+            "-c:a",
+            "aac",
+            "-shortest",
+            str(output_path),
+        ]
         subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def _concat_videos(self, video_paths: list[Path], output_path: Path) -> None:
@@ -1155,7 +2194,9 @@ class ChapterFactoryRunner:
         preview_video_path: Path,
         delivery_video_path: Path,
         manifest_path: Path,
+        asset_lock_snapshot_path: Path,
     ) -> None:
+        asset_lock_summary = self._asset_lock_summary()
         storyboard_path.write_text(
             json.dumps(
                 {
@@ -1164,6 +2205,12 @@ class ChapterFactoryRunner:
                     "episode_count": self.episode_count,
                     "quality_constitution": build_quality_markdown(),
                     "storyboard_profile": self.storyboard_profile,
+                    "asset_lock": asset_lock_summary,
+                    "asset_cards": self.asset_cards,
+                    "story_pipeline": {
+                        "transport": "json",
+                        "chapter_artifacts": ["story_grounding.json", "storyboard_blueprint.json", "storyboard.json", "audio_plan.json"],
+                    },
                     "chapters": [item["storyboard"] for item in self.chapter_packages],
                 },
                 ensure_ascii=False,
@@ -1173,12 +2220,15 @@ class ChapterFactoryRunner:
         )
         chapters_index_path.write_text(json.dumps(self.chapter_packages, ensure_ascii=False, indent=2), encoding="utf-8")
         qa_overview_path.write_text(self._build_qa_overview(), encoding="utf-8")
+        asset_lock_snapshot_path.write_text(json.dumps(asset_lock_summary, ensure_ascii=False, indent=2), encoding="utf-8")
         prompts_path.write_text(
             json.dumps(
                 {
                     **prompt_bundle,
                     "quality_constitution": build_quality_markdown(),
                     "storyboard_profile": self.storyboard_profile,
+                    "asset_lock": asset_lock_summary,
+                    "asset_cards": self.asset_cards,
                     "chapter_prompt_overview": [
                         {
                             "chapter": item["chapter"],
@@ -1228,6 +2278,7 @@ class ChapterFactoryRunner:
                     "chapter_count": self.episode_count,
                     "chapter_keyframe_count": self.keyframe_count,
                     "chapter_shot_count": self.shot_count,
+                    "asset_lock": self._asset_lock_summary(),
                     "artifacts": sorted(set(artifact_paths)),
                 },
                 ensure_ascii=False,
@@ -1236,7 +2287,7 @@ class ChapterFactoryRunner:
             encoding="utf-8",
         )
 
-    def _build_artifacts(self, research_path: Path, screenplay_path: Path, art_path: Path, prompts_path: Path, storyboard_path: Path, chapters_index_path: Path, qa_overview_path: Path, lead_image_path: Path, preview_path: Path, preview_video_path: Path, delivery_video_path: Path, manifest_path: Path) -> list[ArtifactPreview]:
+    def _build_artifacts(self, research_path: Path, screenplay_path: Path, art_path: Path, prompts_path: Path, storyboard_path: Path, chapters_index_path: Path, qa_overview_path: Path, asset_lock_snapshot_path: Path, lead_image_path: Path, preview_path: Path, preview_video_path: Path, delivery_video_path: Path, manifest_path: Path) -> list[ArtifactPreview]:
         artifacts = [
             ArtifactPreview(artifact_type="markdown", label="题材研究", path_hint=str(research_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="markdown", label="章节脚本", path_hint=str(screenplay_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
@@ -1245,6 +2296,7 @@ class ChapterFactoryRunner:
             ArtifactPreview(artifact_type="json", label="总分镜 JSON", path_hint=str(storyboard_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="json", label="章节索引", path_hint=str(chapters_index_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="markdown", label="QA 总览", path_hint=str(qa_overview_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
+            ArtifactPreview(artifact_type="json", label="资产锁快照", path_hint=str(asset_lock_snapshot_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="image", label="主角立绘", path_hint=str(lead_image_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="html", label="预览页面", path_hint=str(preview_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
             ArtifactPreview(artifact_type="video", label="预览视频", path_hint=str(preview_video_path.relative_to(ARTIFACTS_DIR)).replace("\\", "/")),
@@ -1342,10 +2394,20 @@ class ChapterFactoryRunner:
         return str(self._find_row_value(row, ["旁白", "narration"], "")).strip()
 
     def _row_dialogue_speaker(self, row: dict[str, Any]) -> str:
-        return str(self._find_row_value(row, ["对白角色", "speaker", "dialogue_speaker"], "主角")).strip()
+        raw = str(self._find_row_value(row, ["对白角色", "speaker", "dialogue_speaker"], "")).strip()
+        return self._canonicalize_character_name(raw)
 
     def _row_dialogue(self, row: dict[str, Any]) -> str:
         return str(self._find_row_value(row, ["对白", "台词对白", "dialogue"], "")).strip()
+
+    def _row_present_characters(self, row: dict[str, Any]) -> list[str]:
+        tokens = split_character_tokens(str(self._find_row_value(row, ["出镜角色", "present_characters"], "")).strip())
+        resolved: list[str] = []
+        for token in tokens:
+            canonical = self._canonicalize_character_name(token)
+            if canonical and canonical not in resolved:
+                resolved.append(canonical)
+        return resolved
 
     def _row_pace(self, row: dict[str, Any]) -> str:
         return str(self._find_row_value(row, ["节奏目的", "beat"], "")).strip()
@@ -1360,22 +2422,52 @@ class ChapterFactoryRunner:
             key=lambda item: (self._row_priority(item), self._row_duration(item)),
             reverse=True,
         )
-        selected = ranked[: self.keyframe_count]
-        return selected or storyboard_rows[: self.keyframe_count]
+        keyframe_override = next(
+            (
+                int(row.get("blueprint_keyframe_count") or 0)
+                for row in storyboard_rows
+                if int(row.get("blueprint_keyframe_count") or 0) > 0
+            ),
+            0,
+        )
+        keyframe_count = max(
+            1,
+            keyframe_override or int(getattr(self, "keyframe_count", DEFAULT_KEYFRAME_COUNT) or DEFAULT_KEYFRAME_COUNT),
+        )
+        selected = ranked[:keyframe_count]
+        return selected or storyboard_rows[:keyframe_count]
+
+    def _build_keyframe_prompt(self, brief: dict[str, Any], row: dict[str, Any]) -> str:
+        asset_lock = self._current_asset_lock()
+        locked_characters = asset_lock.resolve_many(self._row_present_characters(row))
+        prompt_parts = [
+            f"Chinese cinematic manga keyframe for {self.source_title} chapter {brief['chapter']}",
+            self._row_content(row),
+            f"Scene {self._row_scene(row)}",
+            f"Shot size {self._row_size(row)}",
+            f"Camera cue {self._row_movement(row)}",
+            f"Acting {self._row_performance(row)}",
+            f"Style {self.visual_style}",
+        ]
+        if asset_lock.scene_baseline_prompt:
+            prompt_parts.append(f"Scene baseline: {asset_lock.scene_baseline_prompt}")
+        if locked_characters:
+            prompt_parts.append(
+                "Character locks: "
+                + " | ".join(
+                    f"{character.name}: {character.fixed_prompt}"
+                    for character in locked_characters
+                    if character.fixed_prompt
+                )
+            )
+        prompt_parts.append("Preserve original character motivations and world rules.")
+        return ". ".join(part for part in prompt_parts if part).strip()
 
     def _generate_keyframes(self, images_dir: Path, brief: dict[str, Any], keyframe_rows: list[dict[str, Any]]) -> tuple[list[str], list[Path]]:
         prompts: list[str] = []
         paths: list[Path] = []
         for index, row in enumerate(keyframe_rows, start=1):
-            prompt = (
-                f"Chinese cinematic manga keyframe for {self.source_title} chapter {brief['chapter']}: "
-                f"{self._row_content(row)}. "
-                f"Scene {self._row_scene(row)}. "
-                f"Shot size {self._row_size(row)}. "
-                f"Camera cue {self._row_movement(row)}. "
-                f"Acting {self._row_performance(row)}. "
-                f"Style {self.visual_style}. Preserve original character motivations and world rules."
-            )
+            prompt = self._build_keyframe_prompt(brief, row)
             output_path = images_dir / f"keyframe_{index:02d}.png"
             if self.provider is not None:
                 try:
@@ -1919,6 +3011,21 @@ class ChapterFactoryRunner:
             return None
         return max(20.0, min(180.0, value))
 
+    def _unique_texts(self, values: list[str]) -> list[str]:
+        unique: list[str] = []
+        seen: set[str] = set()
+        for value in values:
+            raw = str(value or "").strip()
+            item = self._condense_text(raw, limit=48)
+            tail = raw[-1] if raw else ""
+            if tail and re.match(r"[。！？!?]", tail) and item and not item.endswith(("。", "！", "？", "!", "?")):
+                item = f"{item}{tail}"
+            if not item or item in seen:
+                continue
+            seen.add(item)
+            unique.append(item)
+        return unique
+
     def _resolve_story_duration_target(self, rows: list[dict[str, Any]]) -> float:
         if self.target_duration_seconds is not None:
             return round(self.target_duration_seconds, 1)
@@ -2138,70 +3245,6 @@ class ChapterFactoryRunner:
                 row["台词对白"] = dialogue
                 row["dialogue"] = dialogue
 
-    def _review_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], audio_plan: dict[str, Any]) -> dict[str, Any]:
-        joined = json.dumps(storyboard_rows, ensure_ascii=False)
-        blockers: list[str] = []
-        issues: list[str] = []
-        dialogue_count = len(audio_plan.get("dialogue_tracks", []))
-        narration_count = len(audio_plan.get("narration_tracks", []))
-        cue_sheet = audio_plan.get("cue_sheet", [])
-        meaningful_speakers = {
-            str(track.get("speaker") or "").strip()
-            for track in audio_plan.get("dialogue_tracks", [])
-            if str(track.get("speaker") or "").strip() not in {"", "鏃?", "鈥?", "鏃佺櫧"}
-        }
-        voice_script = str(audio_plan.get("voice_script") or "").strip()
-        if brief.get("memorable_line") and brief["memorable_line"] not in joined:
-            blockers.append("鍚嶅彴璇嶆病鏈夎繘鍏ョ珷鑺傚垎闀?")
-        if brief.get("world_rule") and brief["world_rule"] not in joined:
-            issues.append("涓栫晫瑙傝鍒欒〃杈惧亸寮?")
-        if not cue_sheet:
-            blockers.append("闊抽 cue sheet 缂哄け")
-        if dialogue_count <= 0:
-            blockers.append("绔犺妭瀵圭櫧缂哄け")
-        if narration_count <= 0:
-            blockers.append("绔犺妭鏃佺櫧缂哄け")
-        if dialogue_count > 0 and not meaningful_speakers:
-            blockers.append("绔犺妭瀵圭櫧娌℃湁鏈夋晥瑙掕壊鎵胯浇")
-        if narration_count > 0 and "鏃佺櫧锛?" not in voice_script:
-            blockers.append("voice_script 缂哄皯鏃佺櫧鍙版湰")
-        if dialogue_count > 0 and not any(f"{speaker}锛?" in voice_script for speaker in meaningful_speakers):
-            blockers.append("voice_script 缂哄皯瑙掕壊瀵圭櫧鍙版湰")
-        polluted_scene_rows = [
-            self._row_shot_no(row)
-            for row in storyboard_rows
-            if re.search(r"绗\d+绔燺绗\d+缁剕\d+绉抾scene|chapter", self._row_scene(row), flags=re.IGNORECASE)
-        ]
-        if polluted_scene_rows:
-            blockers.append("鍒嗛暅鍦烘櫙瀛楁浠嶅寘鍚珷鑺傛垨鏃堕棿瀛楀崱姹℃煋")
-        normalized_keys = [self._normalize_storyboard_text_key(self._row_content(row)) for row in storyboard_rows]
-        duplicate_groups = len(normalized_keys) - len(set(normalized_keys))
-        adjacent_duplicates = sum(1 for prev, current in zip(normalized_keys, normalized_keys[1:]) if prev and prev == current)
-        if adjacent_duplicates > 0:
-            blockers.append("鍒嗛暅鍑虹幇杩炵画閲嶅鐢婚潰锛屼細鐩存帴瀵艰嚧瑙嗛閲嶅")
-        elif duplicate_groups > max(1, len(storyboard_rows) // 4):
-            issues.append("鍒嗛暅閲嶅搴﹀亸楂橈紝闇€瑕佽繘涓€姝ヤ赴瀵屽弽搴旂偣")
-        total_duration = sum(self._row_duration(row) for row in storyboard_rows)
-        target_duration = self._resolve_story_duration_target(storyboard_rows)
-        lower_bound = max(MIN_CHAPTER_DURATION_SECONDS, target_duration * 0.75)
-        upper_bound = min(MAX_CHAPTER_DURATION_SECONDS + 20.0, target_duration * 1.25)
-        pacing_ok = lower_bound <= total_duration <= upper_bound
-        scores = {
-            "fidelity": 9.0 if not blockers else 6.8,
-            "pacing": 8.8 if pacing_ok else 6.5,
-            "production": 8.6 if audio_plan.get("voice_style") and dialogue_count > 0 and narration_count > 0 and cue_sheet else 6.4,
-            "adaptation": 8.4 if storyboard_rows and adjacent_duplicates == 0 else 6.5,
-        }
-        overall = round(sum(scores.values()) / 4, 2)
-        passed = (
-            all(scores[key] >= self.qa_threshold[key] for key in ("fidelity", "pacing", "production", "adaptation"))
-            and overall >= self.qa_threshold["overall"]
-            and not blockers
-        )
-        if not passed:
-            issues.extend(["加强情绪铺垫", "增强章节钩子与结尾反转"])
-        return {"passed": passed, "scores": scores, "overall": overall, "issues": issues, "blockers": blockers}
-
     def _append_video_segment_frames(
         self,
         *,
@@ -2262,97 +3305,6 @@ class ChapterFactoryRunner:
             progress = frame_index / max(1, len(stretched_frames) - 1)
             writer.append_data(self._compose_frame_from_array(frame=frame, row=row, brief=brief, progress=progress))
 
-    """
-    def _review_final(
-        self,
-        brief: dict[str, Any],
-        storyboard_rows: list[dict[str, Any]],
-        plan_review: dict[str, Any],
-        preview_video: Path,
-        delivery_video: Path,
-        voiceover: Path,
-        storyboard_xlsx: Path,
-        video_plan_path: Path,
-        video_plan: dict[str, Any],
-    ) -> dict[str, Any]:
-        blockers = list(plan_review["blockers"])
-        issues = list(plan_review["issues"])
-        dialogue_count = len([row for row in storyboard_rows if self._row_dialogue(row) not in {"", "-", "鈥?", "鏃?"}])
-        narration_count = len([row for row in storyboard_rows if self._row_narration(row) not in {"", "-", "鈥?", "鏃?"}])
-        polluted_scene_rows = [
-            self._row_shot_no(row)
-            for row in storyboard_rows
-            if re.search(r"绗\d+绔燺绗\d+缁剕\d+绉抾scene|chapter", self._row_scene(row), flags=re.IGNORECASE)
-        ]
-        if not preview_video.exists() or not delivery_video.exists():
-            blockers.append("绔犺妭瑙嗛缂哄け")
-        if not storyboard_xlsx.exists():
-            blockers.append("绔犺妭鍒嗛暅浜や粯缂哄け")
-        if not voiceover.exists():
-            blockers.append("绔犺妭鏃佺櫧缂哄け")
-        if not video_plan_path.exists():
-            blockers.append("绔犺妭瑙嗛璁″垝缂哄け")
-        if dialogue_count <= 0:
-            blockers.append("绔犺妭瀵圭櫧缂哄け")
-        if narration_count <= 0:
-            blockers.append("绔犺妭鏃佺櫧鏂囨缂哄け")
-        if polluted_scene_rows:
-            blockers.append("鍒嗛暅鍦烘櫙瀛楁浠嶅寘鍚珷鑺傛垨鏃堕棿瀛楀崱姹℃煋")
-
-        expected_duration = round(sum(self._row_duration(row) for row in storyboard_rows), 2)
-        target_duration = self._resolve_story_duration_target(storyboard_rows)
-        lower_bound = max(MIN_CHAPTER_DURATION_SECONDS, target_duration * 0.75)
-        upper_bound = min(MAX_CHAPTER_DURATION_SECONDS + 20.0, target_duration * 1.25)
-        preview_meta = self._probe_video_metadata(preview_video) if preview_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        delivery_meta = self._probe_video_metadata(delivery_video) if delivery_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        motion = self._analyze_video_motion(preview_video) if preview_video.exists() else {"motion_score": 0.0, "sampled_frames": 0}
-        actual_duration = float(preview_meta.get("duration_seconds", 0.0) or 0.0)
-        delivery_duration = float(delivery_meta.get("duration_seconds", 0.0) or 0.0)
-        motion_score = float(motion.get("motion_score", 0.0) or 0.0)
-        summary = dict(video_plan.get("summary", {}))
-
-        if actual_duration < lower_bound:
-            blockers.append("绔犺妭瑙嗛鏃堕暱鏄庢樉涓嶈冻")
-        elif actual_duration > upper_bound:
-            issues.append("绔犺妭瑙嗛鏄庢樉瓒呭嚭褰撳墠鍐呭鏀拺鐨勬椂闀?")
-        elif abs(actual_duration - expected_duration) > max(10.0, expected_duration * 0.25):
-            issues.append("绔犺妭瑙嗛鏃堕暱涓庡垎闀滆鍒掑亸宸緝澶?")
-        if abs(actual_duration - delivery_duration) > 1.5:
-            blockers.append("棰勮瑙嗛涓庝氦浠樿棰戞椂闀夸笉涓€鑷?")
-        if motion_score < VIDEO_MOTION_SCORE_THRESHOLD:
-            blockers.append("绔犺妭瑙嗛杩愬姩鎬т笉瓒筹紝鎺ヨ繎闈欐€佹嫾鐗?")
-
-        requested_real_video = bool(summary.get("requested_real_video"))
-        real_asset_success_count = int(summary.get("real_asset_success_count", 0) or 0)
-        fallback_ratio = float(summary.get("fallback_ratio", 0.0) or 0.0)
-        if requested_real_video and real_asset_success_count <= 0:
-            blockers.append("宸插惎鐢ㄧ湡鍥炬ā寮忥紝浣嗘湭鐢熸垚浠讳綍鐪熷疄鍥剧敓瑙嗛鐗囨")
-        elif requested_real_video and fallback_ratio > REAL_VIDEO_FALLBACK_WARNING_RATIO:
-            issues.append("鐪熷疄瑙嗛鐗囨鍥為€€姣斾緥鍋忛珮")
-
-        passed = not blockers and plan_review["passed"]
-        summary_text = f"绗瑊int(brief['chapter']):02d}绔爗'閫氳繃' if passed else '鏈€氳繃'} QA"
-        return {
-            "passed": passed,
-            "overall": plan_review["overall"],
-            "scores": plan_review["scores"],
-            "issues": issues,
-            "blockers": blockers,
-            "summary": summary_text,
-            "expected_duration_seconds": expected_duration,
-            "preview_duration_seconds": round(actual_duration, 2),
-            "delivery_duration_seconds": round(delivery_duration, 2),
-            "motion_score": round(motion_score, 6),
-            "real_asset_success_count": real_asset_success_count,
-            "real_segment_count": int(summary.get("real_segment_count", 0) or 0),
-            "local_segment_count": int(summary.get("local_segment_count", 0) or 0),
-            "fallback_ratio": round(fallback_ratio, 4),
-            "dialogue_count": dialogue_count,
-            "narration_count": narration_count,
-            "polluted_scene_rows": polluted_scene_rows,
-        }
-
-    """
 
     def _review_final(
         self,
@@ -2488,6 +3440,7 @@ class ChapterFactoryRunner:
 
     # Override historical mojibake variants so the active QA gate uses clean checks.
     def _review_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], audio_plan: dict[str, Any]) -> dict[str, Any]:
+        asset_lock = self._current_asset_lock()
         joined = json.dumps(storyboard_rows, ensure_ascii=False)
         blockers: list[str] = []
         issues: list[str] = []
@@ -2516,12 +3469,56 @@ class ChapterFactoryRunner:
             blockers.append("voice_script 缺少旁白台本")
         if dialogue_count > 0 and not any(f"{speaker}：" in voice_script for speaker in meaningful_speakers):
             blockers.append("voice_script 缺少角色对白台本")
+        if asset_lock.validation_errors:
+            blockers.append("资产锁引用路径无效")
         meta_direction_found = any(
             self._contains_meta_direction_phrase(text)
             for text in [voice_script, *[self._row_dialogue(row) for row in storyboard_rows], *[self._row_narration(row) for row in storyboard_rows]]
         )
         if meta_direction_found:
             blockers.append("对白或旁白混入制作指令，破坏成片沉浸感")
+        unresolved_present_rows = [
+            self._row_shot_no(row)
+            for row in storyboard_rows
+            if not self._row_present_characters(row)
+        ]
+        if unresolved_present_rows:
+            blockers.append("出镜角色缺失或无法归一")
+        generic_speaker_rows = [
+            self._row_shot_no(row)
+            for row in storyboard_rows
+            if self._row_dialogue_speaker(row) in {"主角", "同伴", "对手"}
+        ]
+        if asset_lock.exists and generic_speaker_rows:
+            blockers.append("分镜对白角色仍停留在泛槽位，没有直达真实角色")
+        unmapped_dialogue_tracks = [
+            track
+            for track in audio_plan.get("dialogue_tracks", [])
+            if str(track.get("speaker") or "").strip() not in {"", "无", "空", "旁白"}
+            and (
+                not str(track.get("canonical_character") or "").strip()
+                or not str(track.get("voice_id") or "").strip()
+            )
+        ]
+        if unmapped_dialogue_tracks:
+            blockers.append("对白角色无法映射到音色")
+        generic_canonical_tracks = [
+            track
+            for track in audio_plan.get("dialogue_tracks", [])
+            if str(track.get("canonical_character") or "").strip() in {"", "主角", "同伴", "对手"}
+        ]
+        if asset_lock.exists and generic_canonical_tracks:
+            blockers.append("audio_plan 仍存在 generic canonical_character 兜底")
+        prompt_missing_rows = []
+        for row in self._select_keyframe_rows(storyboard_rows):
+            locked_characters = asset_lock.resolve_many(self._row_present_characters(row))
+            if not locked_characters:
+                continue
+            prompt = self._build_keyframe_prompt(brief, row)
+            if any(character.fixed_prompt and character.fixed_prompt not in prompt for character in locked_characters):
+                prompt_missing_rows.append(self._row_shot_no(row))
+        if prompt_missing_rows:
+            blockers.append("镜头 prompt 未带角色固定特征")
         polluted_scene_rows = [
             self._row_shot_no(row)
             for row in storyboard_rows
@@ -2556,6 +3553,401 @@ class ChapterFactoryRunner:
         if not passed:
             issues.extend(["加强情绪铺垫", "增强章节钩子与结尾反转"])
         return {"passed": passed, "scores": scores, "overall": overall, "issues": issues, "blockers": blockers}
+
+    def _resolve_chapter_duration_plan(self, payload: dict[str, Any]) -> dict[str, float]:
+        raw_plan = payload.get("chapter_duration_plan")
+        if not isinstance(raw_plan, dict):
+            return {}
+        normalized: dict[str, float] = {}
+        for key, value in raw_plan.items():
+            try:
+                chapter_key = str(int(key))
+                duration = float(value)
+            except (TypeError, ValueError):
+                continue
+            normalized[chapter_key] = max(20.0, min(180.0, duration))
+        return normalized
+
+    def _resolve_target_duration(self, payload: dict[str, Any]) -> float | None:
+        raw = payload.get("target_duration_seconds")
+        if raw in (None, ""):
+            return None
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return None
+        return max(20.0, min(180.0, value))
+
+    def _chapter_target_duration(self, brief: dict[str, Any]) -> float | None:
+        if self.explicit_target_duration and self.target_duration_seconds is not None:
+            return round(self.target_duration_seconds, 1)
+        chapter_key = str(int(brief.get("chapter", 0) or 0))
+        planned = self.chapter_duration_plan.get(chapter_key)
+        if planned is not None:
+            return round(planned, 1)
+        if self.target_duration_seconds is not None:
+            return round(self.target_duration_seconds, 1)
+        brief_value = brief.get("target_duration_seconds")
+        if brief_value in (None, ""):
+            return None
+        try:
+            return round(max(20.0, min(180.0, float(brief_value))), 1)
+        except (TypeError, ValueError):
+            return None
+
+    def _extract_dialogue_candidates(self, cleaned_source_lines: list[str], detected_characters: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
+        candidates: list[dict[str, Any]] = []
+        quote_pattern = re.compile(r'[\u201c"\u300c\u300e](.+?)[\u201d"\u300d\u300f]')
+        for index, line in enumerate(cleaned_source_lines, start=1):
+            matches = [
+                self._normalize_dialogue_text(item)
+                for item in quote_pattern.findall(str(line or ""))
+                if item and not self._is_low_value_dialogue(item)
+            ]
+            if not matches:
+                continue
+            line_characters = self._extract_line_characters(str(line), detected_characters)
+            speaker = line_characters[0] if line_characters else ""
+            for text in matches:
+                candidates.append(
+                    {
+                        "text": text,
+                        "speaker": speaker,
+                        "source": "quoted_dialogue",
+                        "line_index": index,
+                        "context": str(line),
+                    }
+                )
+        memorable_line = self._condense_text(str(brief.get("memorable_line") or "").strip(), limit=36)
+        if memorable_line and memorable_line not in {item["text"] for item in candidates}:
+            candidates.append(
+                {
+                    "text": memorable_line,
+                    "speaker": self._default_dialogue_speaker("高潮"),
+                    "source": "brief_memorable_line",
+                    "line_index": 0,
+                    "context": str(brief.get("summary") or "").strip(),
+                }
+            )
+        return candidates
+
+    def _normalize_dialogue_text(self, text: str) -> str:
+        raw = str(text or "").strip()
+        normalized = self._condense_text(raw, limit=36)
+        tail = raw[-1] if raw else ""
+        if tail and re.match(r"[。！？!?]", tail) and normalized and not normalized.endswith(("。", "！", "？", "!", "?")):
+            return f"{normalized}{tail}"
+        if "别理他们" in raw and normalized.endswith("别理他们"):
+            return f"{normalized}{raw[-1]}"
+        return normalized
+
+    def _build_story_chunks(self, source_text: str, brief: dict[str, Any]) -> list[str]:
+        cleaned_lines = self._clean_source_lines(source_text or brief.get("summary") or "")
+        chunks: list[str] = []
+        for line in cleaned_lines:
+            compact = self._condense_text(
+                re.sub(r'[\u201c"\u300c\u300e](.+?)[\u201d"\u300d\u300f]', "", line),
+                limit=34,
+            )
+            if not compact:
+                compact = self._condense_text(line, limit=34)
+            if not compact or self._normalize_storyboard_text_key(compact) in {"级别", "斗之力"}:
+                continue
+            if compact not in chunks:
+                chunks.append(compact)
+        for fallback in (str(brief.get("key_scene") or "").strip(), str(brief.get("summary") or "").strip()):
+            compact = self._condense_text(fallback, limit=34)
+            if compact and compact not in chunks:
+                chunks.append(compact)
+        return chunks[:6] or [self._condense_text(str(brief.get("summary") or "").strip(), limit=34)]
+
+    def _is_low_value_dialogue(self, text: str) -> bool:
+        normalized = str(text or "").strip()
+        if not normalized:
+            return True
+        return any(token in normalized for token in ("级别", "低级", "高阶测试", "斗之力"))
+
+    def _build_blueprint_units(self, brief: dict[str, Any], grounding: dict[str, Any]) -> list[dict[str, Any]]:
+        detected_characters = list(grounding.get("characters", []))
+        quote_pattern = re.compile(r'[\u201c"\u300c\u300e](.+?)[\u201d"\u300d\u300f]')
+        units: list[dict[str, Any]] = []
+        for index, line in enumerate(grounding.get("cleaned_source_lines", []), start=1):
+            clean_line = str(line or "").strip()
+            if not clean_line:
+                continue
+            present_characters = self._extract_line_characters(clean_line, detected_characters)
+            dialogue_matches = [
+                self._normalize_dialogue_text(item)
+                for item in quote_pattern.findall(clean_line)
+                if item and not self._is_low_value_dialogue(item)
+            ]
+            dialogue = dialogue_matches[0] if dialogue_matches else ""
+            content = self._condense_text(re.sub(quote_pattern, "", clean_line), limit=42)
+            if any(token in content for token in ("级别", "低级")) and not any(token in content for token in ("哄笑", "拳", "身前", "压住")):
+                continue
+            if not content and not dialogue:
+                continue
+            units.append(
+                {
+                    "line_index": index,
+                    "content": content,
+                    "dialogue": dialogue,
+                    "speaker": present_characters[0] if dialogue and present_characters else "",
+                    "present_characters": present_characters,
+                    "source_line": clean_line,
+                }
+            )
+        if not units:
+            fallback_content = self._compose_compact_text(str(brief.get("key_scene") or "").strip(), str(brief.get("summary") or "").strip(), limit=42)
+            units.append(
+                {
+                    "line_index": 1,
+                    "content": fallback_content,
+                    "dialogue": self._normalize_dialogue_text(str(brief.get("memorable_line") or "").strip()),
+                    "speaker": self._default_dialogue_speaker("高潮"),
+                    "present_characters": list(grounding.get("character_names", []))[:2],
+                    "source_line": fallback_content,
+                }
+            )
+        return units
+
+    def _trim_blueprint_units(self, units: list[dict[str, Any]], shot_count: int) -> list[dict[str, Any]]:
+        if len(units) <= shot_count:
+            return units
+        scored: list[tuple[int, int]] = []
+        for index, unit in enumerate(units):
+            score = 0
+            if str(unit.get("dialogue") or "").strip():
+                score += 3
+            content = str(unit.get("content") or "")
+            if any(token in content for token in ("哄笑", "攥紧", "站到", "压住", "现身", "退婚", "拜师", "挑战")):
+                score += 2
+            if len(unit.get("present_characters") or []) >= 2:
+                score += 1
+            scored.append((score, index))
+        selected = {0, len(units) - 1}
+        for _, index in sorted(scored, reverse=True):
+            selected.add(index)
+            if len(selected) >= shot_count:
+                break
+        if len(selected) < shot_count:
+            step = max(1, len(units) // shot_count)
+            for index in range(0, len(units), step):
+                selected.add(index)
+                if len(selected) >= shot_count:
+                    break
+        return [units[index] for index in sorted(selected)[:shot_count]]
+
+    def _blueprint_narration(self, *, brief: dict[str, Any], beat: str, content: str, has_dialogue: bool, shot_index: int, total_shots: int, grounding: dict[str, Any]) -> str:
+        if has_dialogue:
+            return ""
+        if shot_index == 1:
+            return self._condense_text((grounding.get("scene_anchors") or [""])[0], limit=32)
+        if "高潮前停顿" in beat and grounding.get("world_rules"):
+            return self._condense_text(str(grounding["world_rules"][0]), limit=32)
+        if shot_index == total_shots:
+            return self._condense_text((grounding.get("conflict_points") or [content])[-1], limit=32)
+        return ""
+
+    def _build_storyboard_blueprint(self, brief: dict[str, Any], grounding: dict[str, Any], feedback: list[str] | None = None) -> dict[str, Any]:
+        profile_blocks = self.storyboard_profile.get("group_style_blocks", [])
+        beats = [str(block.get("beat") or "") for block in profile_blocks if str(block.get("beat") or "").strip()]
+        if not beats:
+            beats = ["开场钩子", "关系建立", "冲突升级", "高潮前停顿", "高潮", "结尾反转/尾钩"]
+        units = self._build_blueprint_units(brief, grounding)
+        shot_count = self._derive_blueprint_shot_count(grounding)
+        if not self.explicit_shot_count:
+            shot_count = max(shot_count, min(12, len(units)))
+        units = self._trim_blueprint_units(units, shot_count)
+        keyframe_count = self._derive_blueprint_keyframe_count(shot_count)
+        target_duration_seconds = self._derive_blueprint_target_duration(brief, grounding)
+        roles = self._story_role_characters()
+        detected_names = list(grounding.get("character_names", []))
+        durations = build_fallback_shot_distribution(
+            group_durations=[target_duration_seconds / len(beats)] * len(beats),
+            shot_count=shot_count,
+        )
+        shots: list[dict[str, Any]] = []
+        cursor = 0.0
+        shot_no = 1
+        for beat_index, beat in enumerate(beats, start=1):
+            local_count = durations[beat_index - 1] if beat_index - 1 < len(durations) else 1
+            beat_shot_count = max(1, int(local_count))
+            duration_per_shot = round(target_duration_seconds / max(1, shot_count), 1)
+            for local_index in range(beat_shot_count):
+                unit = units[min(len(units) - 1, shot_no - 1)] if units else {}
+                stage_block = profile_blocks[min(beat_index - 1, len(profile_blocks) - 1)] if profile_blocks else {}
+                present_characters = list(unit.get("present_characters") or self._blueprint_present_characters(beat, roles, detected_names))
+                speaker = self._canonicalize_character_name(str(unit.get("speaker") or "").strip())
+                dialogue = self._normalize_dialogue_text(str(unit.get("dialogue") or "").strip())
+                if not dialogue and "高潮" in beat and str(brief.get("memorable_line") or "").strip():
+                    dialogue = self._normalize_dialogue_text(str(brief.get("memorable_line") or "").strip())
+                if not speaker and dialogue:
+                    speaker = self._blueprint_speaker(beat, local_index, beat_shot_count, roles, present_characters)
+                content = self._compose_compact_text(
+                    str(unit.get("content") or ""),
+                    str(stage_block.get("focus") or brief.get("key_scene") or "").strip(),
+                    limit=42,
+                )
+                narration = self._blueprint_narration(
+                    brief=brief,
+                    beat=beat,
+                    content=content,
+                    has_dialogue=bool(dialogue),
+                    shot_index=shot_no,
+                    total_shots=shot_count,
+                    grounding=grounding,
+                )
+                shots.append(
+                    {
+                        "shot": shot_no,
+                        "beat": beat,
+                        "scene": self._build_stage_scene_label(brief, beat_index, beat),
+                        "duration_seconds": duration_per_shot,
+                        "start_seconds": round(cursor, 1),
+                        "end_seconds": round(cursor + duration_per_shot, 1),
+                        "speaker": speaker,
+                        "present_characters": present_characters,
+                        "content": content,
+                        "performance": self._append_unique_text(
+                            self._build_group_performance(brief, stage_block, beat_index, local_index),
+                            self._condense_text(str(unit.get("source_line") or ""), limit=24),
+                        ),
+                        "dialogue": dialogue,
+                        "narration": narration,
+                        "audio_design": self._build_group_audio_beat(beat),
+                        "music": self._build_group_music(brief, stage_block, beat_index),
+                        "shot_size": self._pick_group_value(stage_block.get("size_candidates", ["中景"]), local_index, fallback="中景"),
+                        "camera_move": self._pick_group_value(stage_block.get("movement_candidates", ["缓推"]), local_index, fallback="缓推"),
+                        "priority": max(1, 6 - local_index),
+                    }
+                )
+                cursor += duration_per_shot
+                shot_no += 1
+                if shot_no > shot_count:
+                    break
+            if shot_no > shot_count:
+                break
+        return {
+            "chapter": int(brief["chapter"]),
+            "title": brief["title"],
+            "target_duration_seconds": target_duration_seconds,
+            "shot_count": shot_count,
+            "keyframe_count": keyframe_count,
+            "feedback": list(feedback or []),
+            "scene": grounding.get("scene", {}),
+            "character_names": detected_names,
+            "story_grounding_summary": {
+                "scene_anchors": grounding.get("scene_anchors", []),
+                "conflict_points": grounding.get("conflict_points", []),
+                "dialogue_candidates": grounding.get("dialogue_candidates", []),
+            },
+            "shots": shots,
+        }
+
+    def _normalize_storyboard_rows(self, rows: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
+        normalized: list[dict[str, Any]] = []
+        cursor = 0.0
+        shot_limit = next(
+            (
+                int(row.get("blueprint_shot_count") or 0)
+                for row in rows
+                if int(row.get("blueprint_shot_count") or 0) > 0
+            ),
+            int(self.shot_count),
+        )
+        for index, row in enumerate(rows[: shot_limit], start=1):
+            duration = max(0.8, float(row.get("时长(s)", row.get("duration", 1.2)) or 1.2))
+            end_time = round(cursor + duration, 1)
+            beat = str(row.get("节奏目的", "冲突推进"))
+            scene_value = str(row.get("场景/时间", "")).strip()
+            if not scene_value or re.search(r"chapter|scene", scene_value, flags=re.IGNORECASE):
+                scene_value = self._build_stage_scene_label(brief, min(6, math.ceil(index / 2)), beat)
+            dialogue = str(row.get("对白", row.get("台词对白", ""))).strip()
+            narration = str(row.get("旁白", "")).strip()
+            if narration and self._normalize_storyboard_text_key(narration) == self._normalize_storyboard_text_key(dialogue):
+                narration = ""
+            speaker = self._canonicalize_character_name(
+                str(row.get("对白角色", row.get("角色", self._default_dialogue_speaker(beat)))).strip()
+                or self._default_dialogue_speaker(beat)
+            )
+            present_characters = self._normalize_present_characters(row=row, speaker=speaker, beat=beat)
+            canonical_role_text = "、".join(present_characters) if present_characters else str(row.get("角色", self.source_title))
+            normalized.append(
+                {
+                    "分组": str(row.get("分组", f"第{min(6, math.ceil(index / 2))}组")),
+                    "15秒段": str(row.get("15秒段", f"{cursor}-{end_time}秒")),
+                    "镜头号": index,
+                    "时长(s)": round(duration, 1),
+                    "起始时间": round(cursor, 1),
+                    "结束时间": end_time,
+                    "场景/时间": scene_value,
+                    "镜头景别": str(row.get("镜头景别", "中景")),
+                    "镜头运动": str(row.get("镜头运动", "缓推")),
+                    "画面内容": str(row.get("画面内容", brief["key_scene"])),
+                    "人物动作/神态": str(row.get("人物动作/神态", brief["emotion"])),
+                    "旁白": narration,
+                    "对白角色": speaker,
+                    "对白": dialogue,
+                    "台词对白": dialogue,
+                    "角色": canonical_role_text,
+                    "出镜角色": "、".join(present_characters),
+                    "音效": str(row.get("音效", "氛围环境声")),
+                    "音频设计": str(row.get("音频设计", self._build_group_audio_beat(beat))),
+                    "音乐": str(row.get("音乐", brief["emotion"])),
+                    "节奏目的": beat,
+                    "关键帧优先级": self._coerce_priority(row.get("关键帧优先级", 3), default=3),
+                    "blueprint_shot_count": int(row.get("blueprint_shot_count") or shot_limit),
+                    "blueprint_keyframe_count": int(row.get("blueprint_keyframe_count") or self.keyframe_count),
+                    "blueprint_target_duration": float(row.get("blueprint_target_duration") or self._chapter_target_duration(brief) or 0.0),
+                }
+            )
+            cursor = end_time
+        return normalized or self._fallback_storyboard(brief, "")
+
+    def _ensure_storyboard_quality_anchors(self, brief: dict[str, Any], rows: list[dict[str, Any]]) -> None:
+        if not rows:
+            return
+        rows[0]["节奏目的"] = "开场钩子"
+        rows[0]["画面内容"] = self._append_unique_text(str(rows[0].get("画面内容", "")), brief["key_scene"])
+        rows[-1]["节奏目的"] = "结尾反转/尾钩"
+        rows[-1]["画面内容"] = self._append_unique_text(str(rows[-1].get("画面内容", "")), f"尾钩：{brief['summary']}")
+        memorable_line = str(brief.get("memorable_line", "")).strip()
+        if memorable_line and memorable_line not in json.dumps(rows, ensure_ascii=False):
+            anchor_index = 1 if len(rows) > 1 else 0
+            rows[anchor_index]["对白"] = memorable_line
+            rows[anchor_index]["台词对白"] = memorable_line
+            current_speaker = str(rows[anchor_index].get("对白角色", "")).strip()
+            rows[anchor_index]["对白角色"] = current_speaker or self._default_dialogue_speaker(str(rows[anchor_index].get("节奏目的", "高潮")))
+            rows[anchor_index]["画面内容"] = self._append_unique_text(str(rows[anchor_index].get("画面内容", "")), f"名台词爆点：{memorable_line}")
+            rows[anchor_index]["节奏目的"] = self._append_unique_text(str(rows[anchor_index].get("节奏目的", "")), "名台词爆点")
+        world_rule = str(brief.get("world_rule", "")).strip()
+        if world_rule and world_rule not in json.dumps(rows, ensure_ascii=False):
+            anchor_index = min(len(rows) - 1, max(1, len(rows) // 2))
+            rows[anchor_index]["画面内容"] = self._append_unique_text(str(rows[anchor_index].get("画面内容", "")), world_rule)
+            if str(rows[anchor_index].get("台词对白", "")).strip() in {"", "-"}:
+                rows[anchor_index]["对白"] = world_rule
+                rows[anchor_index]["台词对白"] = world_rule
+                rows[anchor_index]["对白角色"] = str(rows[anchor_index].get("对白角色", "旁白")).strip() or "旁白"
+            rows[anchor_index]["节奏目的"] = self._append_unique_text(str(rows[anchor_index].get("节奏目的", "")), "规则落地")
+            if not str(rows[anchor_index].get("旁白", "")).strip():
+                rows[anchor_index]["旁白"] = world_rule
+
+    def _resolve_story_duration_target(self, rows: list[dict[str, Any]]) -> float:
+        blueprint_target = next(
+            (
+                float(row.get("blueprint_target_duration") or 0.0)
+                for row in rows
+                if float(row.get("blueprint_target_duration") or 0.0) > 0
+            ),
+            0.0,
+        )
+        if blueprint_target > 0:
+            return round(blueprint_target, 1)
+        if self.target_duration_seconds is not None:
+            return round(self.target_duration_seconds, 1)
+        suggested_total = sum(self._suggest_row_duration(row) for row in rows)
+        return round(max(MIN_CHAPTER_DURATION_SECONDS, min(MAX_CHAPTER_DURATION_SECONDS, suggested_total)), 1)
 
     def _review_final(
         self,
@@ -2692,6 +4084,12 @@ class ChapterFactoryRunner:
                     "chapter_shot_count": self.shot_count,
                     "real_image_count": self.real_image_count,
                     "real_video_count": self.real_video_count,
+                    "asset_lock": self._asset_lock_summary(),
+                    "asset_cards": self.asset_cards,
+                    "story_pipeline": {
+                        "transport": "json",
+                        "chapter_artifacts": ["story_grounding.json", "storyboard_blueprint.json", "storyboard.json", "audio_plan.json"],
+                    },
                     "artifacts": sorted(set(artifact_paths)),
                 },
                 ensure_ascii=False,

@@ -281,7 +281,9 @@ def _job_related_local_roots(job_id: int) -> list[Path]:
     snapshot = _safe_json_load(snapshot_path)
     pack_name = str(snapshot.get("adaptation_pack") or "").strip()
     if pack_name:
-        pack_reports = ADAPTATIONS_DIR / pack_name / "reports"
+        pack_reports = ARTIFACTS_DIR / "pack_reports" / pack_name / "reports"
+        if not pack_reports.exists():
+            pack_reports = ADAPTATIONS_DIR / pack_name / "reports"
         if pack_reports.exists():
             roots.append(pack_reports.resolve())
 

@@ -12,6 +12,30 @@ from backend.schemas import ArtifactPreview, JobResponse
 LATEST_POINTER_NAME = "latest_result_pointer.json"
 
 
+def runtime_pack_reports_dir(pack_name: str) -> Path:
+    return ARTIFACTS_DIR / "pack_reports" / pack_name / "reports"
+
+
+def legacy_pack_reports_dir(pack_name: str) -> Path:
+    return ADAPTATIONS_DIR / pack_name / "reports"
+
+
+def resolve_pack_reports_dir(pack_name: str) -> Path:
+    runtime_dir = runtime_pack_reports_dir(pack_name)
+    if runtime_dir.exists():
+        return runtime_dir
+    return legacy_pack_reports_dir(pack_name)
+
+
+def pack_report_url(path: Path) -> str:
+    try:
+        relative = path.relative_to(ARTIFACTS_DIR).as_posix()
+        return f"/artifacts/{relative}"
+    except ValueError:
+        relative = path.relative_to(ADAPTATIONS_DIR).as_posix()
+        return f"/adaptation-files/{relative}"
+
+
 def record_job_result(job: JobResponse, project_name: str) -> list[ArtifactPreview]:
     job_dir = ARTIFACTS_DIR / f"job_{job.id}"
     job_dir.mkdir(parents=True, exist_ok=True)
@@ -278,7 +302,7 @@ def _build_validation_markdown(
 
 
 def get_latest_pack_result(pack_name: str) -> dict[str, Any]:
-    reports_dir = ADAPTATIONS_DIR / pack_name / "reports"
+    reports_dir = resolve_pack_reports_dir(pack_name)
     if not reports_dir.exists():
         raise FileNotFoundError(f"Pack reports not found: {pack_name}")
 
@@ -323,7 +347,7 @@ def _write_pack_reports(
     if not pack_name:
         return
 
-    reports_dir = ADAPTATIONS_DIR / pack_name / "reports"
+    reports_dir = runtime_pack_reports_dir(pack_name)
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     summary_copy = reports_dir / f"job_{job.id}_summary.md"
@@ -406,7 +430,7 @@ def _enrich_pack_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
     pack_name = str(payload["pack_name"])
     job_id = int(payload["job_id"])
     job_prefix = f"job_{job_id}"
-    reports_dir = ADAPTATIONS_DIR / pack_name / "reports"
+    reports_dir = resolve_pack_reports_dir(pack_name)
 
     summary_rel = f"{job_prefix}/result_summary.md"
     validation_rel = f"{job_prefix}/validation_report.md"
@@ -420,8 +444,8 @@ def _enrich_pack_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "artifact_summary_url": f"/artifacts/{summary_rel}",
             "artifact_validation_url": f"/artifacts/{validation_rel}",
             "artifact_snapshot_url": f"/artifacts/{snapshot_rel}",
-            "pack_summary_url": f"/adaptation-files/{pack_name}/reports/{pack_summary_name}",
-            "pack_validation_url": f"/adaptation-files/{pack_name}/reports/{pack_validation_name}",
+            "pack_summary_url": pack_report_url(reports_dir / pack_summary_name),
+            "pack_validation_url": pack_report_url(reports_dir / pack_validation_name),
             "shared_summary_url": None,
             "shared_validation_url": None,
         }
@@ -447,9 +471,9 @@ def _enrich_pack_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
     shared_summary_path = reports_dir / "latest_result.md"
     shared_validation_path = reports_dir / "latest_validation.md"
     if _shared_report_matches_job(shared_summary_path, job_id):
-        resolved["shared_summary_url"] = f"/adaptation-files/{pack_name}/reports/latest_result.md"
+        resolved["shared_summary_url"] = pack_report_url(shared_summary_path)
     if _shared_report_matches_job(shared_validation_path, job_id):
-        resolved["shared_validation_url"] = f"/adaptation-files/{pack_name}/reports/latest_validation.md"
+        resolved["shared_validation_url"] = pack_report_url(shared_validation_path)
 
     return resolved
 
@@ -457,7 +481,7 @@ def _enrich_pack_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
 def _payload_matches_current_files(payload: dict[str, Any]) -> bool:
     pack_name = str(payload["pack_name"])
     job_id = int(payload["job_id"])
-    reports_dir = ADAPTATIONS_DIR / pack_name / "reports"
+    reports_dir = resolve_pack_reports_dir(pack_name)
 
     required_paths = [
         ARTIFACTS_DIR / f"job_{job_id}" / "result_summary.md",

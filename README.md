@@ -156,3 +156,53 @@ python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.
 这会直接调用 `scripts/run_frontend_real_media_smoke.mjs`，是当前最明确的浏览器 smoke 入口。
 
 `check_api.py` 和 `run_test_report.py` 现在也会使用同一套 runtime 核对逻辑，分别用于快速检查和生成报告。
+
+## 资产锁前移与标准化资产卡
+
+当前 pack 模式下，资产锁已经从单纯的提示词约束前移到完整的章节生产链路。对启用了 `asset_lock.json` 的适配包，章节生产会同时加载：
+
+- `adaptations/<pack>/asset_lock.json`
+- `adaptations/<pack>/assets/characters/character_cards.json`
+- `adaptations/<pack>/assets/scenes/scene_cards.json`
+
+这三类文件分别承担不同职责：
+
+- `asset_lock.json`：角色固定 prompt、音色映射、参考图路径、场景基线。
+- `character_cards.json`：标准化角色卡，补充 `dramatic_role`、`visual_traits`、`asset_status`、`reference_assets` 等结构化字段。
+- `scene_cards.json`：标准化场景卡，补充 `baseline_prompt`、`asset_status`、`reference_assets`、镜头约束与环境基线。
+
+注意：
+
+- `主角 / 同伴 / 对手 / 旁白` 这类槽位不再作为正式流程字段传递。
+- 分镜、音频、QA 和 manifest 里应直接使用真实角色名。
+- 槽位词只允许存在于历史兼容逻辑或旧数据里，不能进入新的章节中间产物。
+
+## 章节 JSON 流水线
+
+pack 模式章节运行时，章节目录现在会产出一条明确的 JSON 流水线：
+
+- `story_grounding.json`：章节事实源，提取真实角色、场景锚点、世界规则、候选对白与有效旁白。
+- `storyboard_blueprint.json`：内容驱动的镜头蓝图，确定时长、镜头数、关键帧数、对白角色和出镜角色。
+- `storyboard.json`：最终分镜表，只保留真实 canonical character。
+- `audio_plan.json`：只消费真实角色分镜，生成对白/旁白轨、总线、优先级和 ducking 参数。
+
+其中 `story_grounding.json` 和 `storyboard_blueprint.json` 是后续 QA、复跑和问题定位的首选检查入口。
+
+## 章节时长计划与可审阅资产库
+
+当前 pack 模式支持两层章节时长配置：
+
+- `adaptations/<pack>/pack.json` 中的 `default_target_duration_seconds`
+- `adaptations/<pack>/chapter_briefs.json` 中每章的 `target_duration_seconds`
+
+运行 pack 任务时，系统会把章节级时长整理成 `chapter_duration_plan` 注入 job input，并优先用于 `storyboard_blueprint.json` 的 `target_duration_seconds` 规划。
+
+标准化资产卡也补充为可审阅状态，不再只看占位图：
+
+- `character_cards.json` 新增并维护 `asset_status_detail`、`review_status`、`approval_notes`、`owner`、`review_checklist`、`source_evidence`、`last_verified_job_id`、`usage_scope`
+- `scene_cards.json` 同样维护上述审阅字段，并继续保留 `camera_guardrails`、`continuity_guardrails`
+
+pack 结果沉淀已切到外部 runtime 目录，不再继续回写 `adaptations/<pack>/reports/`。当前应优先查看：
+
+- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\job_<id>`
+- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\pack_reports\<pack>\reports`

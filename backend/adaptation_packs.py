@@ -7,6 +7,7 @@ from typing import Any
 
 from backend.config import ADAPTATIONS_DIR
 from backend.schemas import JobCreate
+from shared.asset_lock import AssetLock, load_asset_lock
 from shared.providers.ark import ArkProvider
 
 
@@ -20,9 +21,11 @@ class AdaptationPack:
     chapter_range: str
     default_project_name: str
     default_scene_count: int
+    default_target_duration_seconds: float | None
     recommended_visual_style: str
     chapter_briefs: list[dict[str, Any]]
     root_dir: Path
+    asset_lock: AssetLock
 
 
 def list_adaptation_packs() -> list[AdaptationPack]:
@@ -44,15 +47,18 @@ def get_adaptation_pack(pack_name: str) -> AdaptationPack:
     pack_dir = _get_pack_dir(pack_name)
     briefs = _load_chapter_briefs(pack_dir)
     meta = _load_pack_meta(pack_dir, briefs)
+    asset_lock = load_asset_lock(pack_dir)
     return AdaptationPack(
         pack_name=pack_name,
         source_title=str(meta.get("source_title", pack_name)).strip() or pack_name,
         chapter_range=str(meta.get("chapter_range", _chapter_range_from_briefs(briefs))).strip() or _chapter_range_from_briefs(briefs),
         default_project_name=str(meta.get("default_project_name", pack_name.replace("_", "-"))).strip() or pack_name.replace("_", "-"),
         default_scene_count=int(meta.get("default_scene_count", 20) or 20),
+        default_target_duration_seconds=_coerce_optional_float(meta.get("default_target_duration_seconds")),
         recommended_visual_style=str(meta.get("recommended_visual_style", DEFAULT_VISUAL_STYLE)).strip() or DEFAULT_VISUAL_STYLE,
         chapter_briefs=briefs,
         root_dir=pack_dir,
+        asset_lock=asset_lock,
     )
 
 
@@ -97,25 +103,40 @@ def build_adaptation_job_payload(
     chapter_briefs = select_chapter_briefs(pack, chapter_start=chapter_start, chapter_end=chapter_end)
     chapter_numbers = [int(item.get("chapter", index + 1)) for index, item in enumerate(chapter_briefs)]
     chapter_range = f"{min(chapter_numbers)}-{max(chapter_numbers)}"
+    resolved_target_duration = _coerce_optional_float(target_duration_seconds)
+    duration_source = "request"
+    if resolved_target_duration is None:
+        resolved_target_duration = pack.default_target_duration_seconds
+        duration_source = "pack_default" if resolved_target_duration is not None else "auto"
+    chapter_duration_plan = {
+        str(int(item.get("chapter", index + 1))): value
+        for index, item in enumerate(chapter_briefs)
+        if (value := _coerce_optional_float(item.get("target_duration_seconds"))) is not None
+    }
+    payload_input: dict[str, Any] = {
+        "adaptation_pack": pack.pack_name,
+        "source_title": pack.source_title,
+        "chapter_range": chapter_range,
+        "episode_count": len(chapter_briefs),
+        "visual_style": pack.recommended_visual_style,
+        "storyboard_scene_count": scene_count,
+        "target_duration_seconds": resolved_target_duration,
+        "target_duration_source": duration_source,
+        "chapter_duration_plan": chapter_duration_plan,
+        "chapter_keyframe_count": chapter_keyframe_count or 4,
+        "chapter_shot_count": chapter_shot_count or 10,
+        "use_model_storyboard": use_model_storyboard,
+        "use_real_images": use_real_images,
+        "image_model": image_model or ArkProvider.DEFAULT_IMAGE_MODEL,
+        "video_model": video_model or ArkProvider.DEFAULT_VIDEO_MODEL,
+        "chapter_briefs": chapter_briefs,
+    }
+    if pack.asset_lock.exists:
+        payload_input["asset_lock"] = pack.asset_lock.to_payload()
     return JobCreate(
         capability_id="manga",
         project_name=(project_name or pack.default_project_name).strip(),
-        input={
-            "adaptation_pack": pack.pack_name,
-            "source_title": pack.source_title,
-            "chapter_range": chapter_range,
-            "episode_count": len(chapter_briefs),
-            "visual_style": pack.recommended_visual_style,
-            "storyboard_scene_count": scene_count,
-            "target_duration_seconds": target_duration_seconds,
-            "chapter_keyframe_count": chapter_keyframe_count or 4,
-            "chapter_shot_count": chapter_shot_count or 10,
-            "use_model_storyboard": use_model_storyboard,
-            "use_real_images": use_real_images,
-            "image_model": image_model or ArkProvider.DEFAULT_IMAGE_MODEL,
-            "video_model": video_model or ArkProvider.DEFAULT_VIDEO_MODEL,
-            "chapter_briefs": chapter_briefs,
-        },
+        input=payload_input,
     )
 
 
@@ -180,6 +201,7 @@ def _load_pack_meta(pack_dir: Path, briefs: list[dict[str, Any]]) -> dict[str, A
             "chapter_range": _chapter_range_from_briefs(briefs),
             "default_project_name": pack_dir.name.replace("_", "-"),
             "default_scene_count": 20,
+            "default_target_duration_seconds": None,
             "recommended_visual_style": DEFAULT_VISUAL_STYLE,
         }
     return json.loads(meta_path.read_text(encoding="utf-8"))
@@ -205,3 +227,12 @@ def _chapter_range_from_briefs(briefs: list[dict[str, Any]]) -> str:
     if not numbers:
         return ""
     return f"{min(numbers)}-{max(numbers)}"
+
+
+def _coerce_optional_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
