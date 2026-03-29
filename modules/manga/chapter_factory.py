@@ -436,6 +436,7 @@ class ChapterFactoryRunner:
         character = self._current_asset_lock().resolve_character(token)
         return character.name if character is not None else token
 
+    # Phase 1: grounding source text into structured chapter facts.
     def _build_story_grounding(self, brief: dict[str, Any], source_text: str) -> dict[str, Any]:
         asset_lock = self._current_asset_lock()
         cards = self.asset_cards
@@ -535,7 +536,11 @@ class ChapterFactoryRunner:
         unique: list[str] = []
         seen: set[str] = set()
         for value in values:
-            item = self._condense_text(str(value or "").strip(), limit=48)
+            raw = str(value or "").strip()
+            item = self._condense_text(raw, limit=48)
+            tail = raw[-1] if raw else ""
+            if tail and re.match(r"[。！？!?]", tail) and item and not item.endswith(("。", "！", "？", "!", "?")):
+                item = f"{item}{tail}"
             if not item or item in seen:
                 continue
             seen.add(item)
@@ -552,39 +557,6 @@ class ChapterFactoryRunner:
                 if canonical and canonical not in names:
                     names.append(canonical)
         return names
-
-    def _extract_dialogue_candidates(self, cleaned_source_lines: list[str], detected_characters: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
-        candidates: list[dict[str, Any]] = []
-        quote_pattern = re.compile(r"[“\"「『](.+?)[”\"」』]")
-        for index, line in enumerate(cleaned_source_lines, start=1):
-            matches = [self._condense_text(item, limit=36) for item in quote_pattern.findall(line)]
-            matches = [item for item in matches if item and len(item) >= 4]
-            if not matches:
-                continue
-            line_characters = self._extract_line_characters(line, detected_characters)
-            speaker = line_characters[0] if line_characters else ""
-            for text in matches:
-                candidates.append(
-                    {
-                        "text": text,
-                        "speaker": speaker,
-                        "source": "quoted_dialogue",
-                        "line_index": index,
-                        "context": line,
-                    }
-                )
-        memorable_line = self._normalize_dialogue_text(str(brief.get("memorable_line") or "").strip())
-        if memorable_line and memorable_line not in {item["text"] for item in candidates}:
-            candidates.append(
-                {
-                    "text": memorable_line,
-                    "speaker": self._default_dialogue_speaker("高潮"),
-                    "source": "brief_memorable_line",
-                    "line_index": 0,
-                    "context": str(brief.get("summary") or "").strip(),
-                }
-            )
-        return candidates
 
     def _extract_scene_anchors(self, cleaned_source_lines: list[str], brief: dict[str, Any], scene_card: dict[str, Any]) -> list[str]:
         keywords = ("广场", "台", "席", "大殿", "宿舍", "走廊", "石碑", "洞府", "擂台", "房间", "门外")
@@ -683,108 +655,6 @@ class ChapterFactoryRunner:
             return narrator.name
         return lead.name if lead is not None else (present_characters[0] if present_characters else "")
 
-    def _blueprint_narration(self, *, brief: dict[str, Any], beat: str, content: str, has_dialogue: bool, shot_index: int, total_shots: int) -> str:
-        if has_dialogue and shot_index not in {1, total_shots} and "世界规则" not in content:
-            return ""
-        if shot_index == 1 or "开场钩子" in beat:
-            return self._compose_compact_text(str(brief.get("summary") or "").strip(), content, limit=36)
-        if "高潮前停顿" in beat and str(brief.get("world_rule") or "").strip():
-            return str(brief.get("world_rule") or "").strip()
-        if shot_index == total_shots:
-            return self._compose_compact_text(content, "余波未散，新的悬念已经落下。", limit=34)
-        return ""
-
-    def _build_storyboard_blueprint(self, brief: dict[str, Any], grounding: dict[str, Any], feedback: list[str] | None = None) -> dict[str, Any]:
-        profile_blocks = self.storyboard_profile.get("group_style_blocks", [])
-        beats = [str(block.get("beat") or "") for block in profile_blocks if str(block.get("beat") or "").strip()]
-        if not beats:
-            beats = ["开场钩子", "关系建立", "冲突升级", "高潮前停顿", "高潮", "结尾反转/尾钩"]
-        shot_count = self._derive_blueprint_shot_count(grounding)
-        keyframe_count = self._derive_blueprint_keyframe_count(shot_count)
-        target_duration_seconds = self._derive_blueprint_target_duration(grounding)
-        roles = self._story_role_characters()
-        detected_names = list(grounding.get("character_names", []))
-        durations = build_fallback_shot_distribution(
-            group_durations=[target_duration_seconds / len(beats)] * len(beats),
-            shot_count=shot_count,
-        )
-        story_chunks = list(grounding.get("story_chunks", [])) or self._build_story_chunks(str(grounding.get("source_excerpt") or ""), brief)
-        shots: list[dict[str, Any]] = []
-        cursor = 0.0
-        shot_no = 1
-        for beat_index, beat in enumerate(beats, start=1):
-            local_count = durations[beat_index - 1] if beat_index - 1 < len(durations) else 1
-            beat_shot_count = max(1, int(local_count))
-            duration_per_shot = round((target_duration_seconds / shot_count), 1)
-            for local_index in range(beat_shot_count):
-                chunk = story_chunks[min(len(story_chunks) - 1, shot_no - 1)] if story_chunks else str(brief.get("summary") or "")
-                stage_block = profile_blocks[min(beat_index - 1, len(profile_blocks) - 1)] if profile_blocks else {}
-                present_characters = self._blueprint_present_characters(beat, roles, detected_names)
-                speaker = self._blueprint_speaker(beat, local_index, beat_shot_count, roles, present_characters)
-                dialogue = ""
-                if speaker:
-                    if "高潮" in beat and str(brief.get("memorable_line") or "").strip():
-                        dialogue = str(brief.get("memorable_line") or "").strip()
-                    elif "关系建立" in beat and roles.get("support") is not None:
-                        dialogue = "先别急着出手，让我确认这里到底哪里不对。"
-                    elif "冲突" in beat:
-                        dialogue = "再退一步，局面就真的压不住了。"
-                    elif shot_no == 1:
-                        dialogue = "这火不对劲。"
-                    elif shot_no == shot_count:
-                        dialogue = "这件事，还没结束。"
-                content = self._compose_compact_text(
-                    chunk,
-                    str(stage_block.get("focus") or brief.get("key_scene") or brief.get("summary") or "").strip(),
-                    limit=42,
-                )
-                narration = self._blueprint_narration(
-                    brief=brief,
-                    beat=beat,
-                    content=content,
-                    has_dialogue=bool(dialogue),
-                    shot_index=shot_no,
-                    total_shots=shot_count,
-                )
-                shots.append(
-                    {
-                        "shot": shot_no,
-                        "beat": beat,
-                        "scene": self._build_stage_scene_label(brief, beat_index, beat),
-                        "duration_seconds": duration_per_shot,
-                        "start_seconds": round(cursor, 1),
-                        "end_seconds": round(cursor + duration_per_shot, 1),
-                        "speaker": speaker,
-                        "present_characters": present_characters,
-                        "content": content,
-                        "performance": self._build_group_performance(brief, stage_block, beat_index, local_index),
-                        "dialogue": dialogue,
-                        "narration": narration,
-                        "audio_design": self._build_group_audio_beat(beat),
-                        "music": self._build_group_music(brief, stage_block, beat_index),
-                        "shot_size": self._pick_group_value(stage_block.get("size_candidates", ["中景"]), local_index, fallback="中景"),
-                        "camera_move": self._pick_group_value(stage_block.get("movement_candidates", ["缓推"]), local_index, fallback="缓推"),
-                        "priority": max(1, 6 - local_index),
-                    }
-                )
-                cursor += duration_per_shot
-                shot_no += 1
-                if shot_no > shot_count:
-                    break
-            if shot_no > shot_count:
-                break
-        return {
-            "chapter": int(brief["chapter"]),
-            "title": brief["title"],
-            "target_duration_seconds": target_duration_seconds,
-            "shot_count": shot_count,
-            "keyframe_count": keyframe_count,
-            "feedback": list(feedback or []),
-            "scene": grounding.get("scene", {}),
-            "character_names": detected_names,
-            "shots": shots,
-        }
-
     def _fallback_storyboard_from_blueprint(self, brief: dict[str, Any], blueprint: dict[str, Any]) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         for shot in blueprint.get("shots", []):
@@ -863,112 +733,6 @@ class ChapterFactoryRunner:
         except Exception as exc:
             self.provider_notes.append(f"章节 {brief['chapter']} 分镜改用回退模板：{exc}")
         return self._apply_storyboard_feedback(brief, candidate_rows, feedback)
-
-    def _select_keyframe_rows(self, storyboard_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        ranked = sorted(
-            storyboard_rows,
-            key=lambda item: (
-                self._row_priority(item),
-                self._row_duration(item),
-            ),
-            reverse=True,
-        )
-        selected = ranked[: self.keyframe_count]
-        return selected or storyboard_rows[: self.keyframe_count]
-
-    def _generate_keyframes(self, images_dir: Path, brief: dict[str, Any], keyframe_rows: list[dict[str, Any]]) -> tuple[list[str], list[Path]]:
-        prompts: list[str] = []
-        paths: list[Path] = []
-        for index, row in enumerate(keyframe_rows, start=1):
-            prompt = (
-                f"Chinese cinematic manga keyframe for {self.source_title}: "
-                f"{row['画面内容']}. "
-                f"Shot size {row['镜头景别']}. "
-                f"Camera cue {row['镜头运动']}. "
-                f"Acting {row['人物动作/神态']}. "
-                f"Style {self.visual_style}. Preserve original character motivations and world rules. "
-                "Do not render chapter labels, scene captions, timestamps, or storyboard text in the image."
-            )
-            output_path = images_dir / f"keyframe_{index:02d}.png"
-            if self.provider is not None:
-                try:
-                    self.provider.generate_image_to_file(
-                        prompt=prompt,
-                        output_path=output_path,
-                        width=1024,
-                        height=1024,
-                        image_model=self.keyframe_image_model,
-                    )
-                    self.real_image_count += 1
-                except Exception as exc:
-                    self.provider_notes.append(f"章节 {brief['chapter']} 关键帧回退：{exc}")
-                    self.write_placeholder_image(output_path=output_path, title=self.source_title, subtitle=row["画面内容"], size=(1024, 1024))
-            else:
-                self.write_placeholder_image(output_path=output_path, title=self.source_title, subtitle=row["画面内容"], size=(1024, 1024))
-            prompts.append(prompt)
-            paths.append(output_path)
-        return prompts, paths
-
-    def _review_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], audio_plan: dict[str, Any]) -> dict[str, Any]:
-        asset_lock = self._current_asset_lock()
-        joined = json.dumps(storyboard_rows, ensure_ascii=False)
-        blockers: list[str] = []
-        issues: list[str] = []
-        dialogue_count = len(audio_plan.get("dialogue_tracks", []))
-        narration_count = len(audio_plan.get("narration_tracks", []))
-        cue_sheet = audio_plan.get("cue_sheet", [])
-        meaningful_speakers = {
-            str(track.get("speaker") or "").strip()
-            for track in audio_plan.get("dialogue_tracks", [])
-            if str(track.get("speaker") or "").strip() not in {"", "无", "—", "旁白"}
-        }
-        voice_script = str(audio_plan.get("voice_script") or "").strip()
-        if brief.get("memorable_line") and brief["memorable_line"] not in joined:
-            blockers.append("名台词没有进入章节分镜")
-        if brief.get("world_rule") and brief["world_rule"] not in joined:
-            issues.append("世界观规则表达偏弱")
-        if not cue_sheet:
-            blockers.append("音频 cue sheet 缺失")
-        if dialogue_count <= 0:
-            blockers.append("章节对白缺失")
-        if narration_count <= 0:
-            blockers.append("章节旁白缺失")
-        if dialogue_count > 0 and not meaningful_speakers:
-            blockers.append("章节对白没有有效角色承载")
-        if narration_count > 0 and "旁白：" not in voice_script:
-            blockers.append("voice_script 缺少旁白台本")
-        if dialogue_count > 0 and not any(f"{speaker}：" in voice_script for speaker in meaningful_speakers):
-            blockers.append("voice_script 缺少角色对白台本")
-        polluted_scene_rows = [
-            self._row_shot_no(row)
-            for row in storyboard_rows
-            if re.search(r"第\d+章|第\d+组|\d+秒|scene|chapter", self._row_scene(row), flags=re.IGNORECASE)
-        ]
-        if polluted_scene_rows:
-            blockers.append("分镜场景字段仍包含章节或时间字卡污染")
-        total_duration = sum(float(row["时长(s)"]) for row in storyboard_rows)
-        scores = {
-            "fidelity": 9.0 if not blockers else 6.8,
-            "pacing": 8.8 if 90 <= total_duration <= 120 else 6.5,
-            "production": 8.6 if audio_plan.get("voice_style") and dialogue_count > 0 and narration_count > 0 and cue_sheet else 6.4,
-            "adaptation": 8.4 if storyboard_rows else 6.5,
-        }
-        overall = round(sum(scores.values()) / 4, 2)
-        passed = all(scores[key] >= self.qa_threshold[key] for key in ("fidelity", "pacing", "production", "adaptation")) and overall >= self.qa_threshold["overall"] and not blockers
-        if not passed:
-            issues.extend(["加强情绪铺垫", "增加章节钩子与结尾反转"])
-        return {"passed": passed, "scores": scores, "overall": overall, "issues": issues, "blockers": blockers}
-
-    def _review_final(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], plan_review: dict[str, Any], preview_video: Path, delivery_video: Path, voiceover: Path, storyboard_xlsx: Path) -> dict[str, Any]:
-        blockers = list(plan_review["blockers"])
-        if not preview_video.exists() or not delivery_video.exists():
-            blockers.append("章节视频缺失")
-        if not storyboard_xlsx.exists():
-            blockers.append("章节分镜交付缺失")
-        if not voiceover.exists():
-            blockers.append("章节旁白缺失")
-        passed = not blockers and plan_review["passed"]
-        return {"passed": passed, "overall": plan_review["overall"], "scores": plan_review["scores"], "blockers": blockers, "summary": f"第{brief['chapter']:02d}章 {'通过' if passed else '未通过'} QA"}
 
     def _write_top_level_docs(self, research_path: Path, screenplay_path: Path, art_path: Path) -> None:
         research_lines = [f"# 题材研究：{self.source_title}", "", f"- 章节范围：{self.chapter_range}", f"- 章节数：{self.episode_count}", f"- 每章关键帧：{self.keyframe_count}", "", "## 改编质量宪章", "", build_quality_markdown(), "", "## 章节摘要"]
@@ -1077,65 +841,6 @@ class ChapterFactoryRunner:
                 shot_no += 1
         return rows
 
-    def _normalize_storyboard_rows(self, rows: list[dict[str, Any]], brief: dict[str, Any]) -> list[dict[str, Any]]:
-        normalized: list[dict[str, Any]] = []
-        cursor = 0.0
-        shot_limit = next(
-            (
-                int(row.get("blueprint_shot_count") or 0)
-                for row in rows
-                if int(row.get("blueprint_shot_count") or 0) > 0
-            ),
-            int(self.shot_count),
-        )
-        for index, row in enumerate(rows[: shot_limit], start=1):
-            duration = max(0.8, float(row.get("时长(s)", row.get("duration", 1.2)) or 1.2))
-            end_time = round(cursor + duration, 1)
-            beat = str(row.get("节奏目的", "冲突推进"))
-            scene_value = str(row.get("场景/时间", "")).strip()
-            if not scene_value or re.search(r"第\d+章|第\d+组|\d+秒|scene|chapter", scene_value, flags=re.IGNORECASE):
-                scene_value = self._build_stage_scene_label(brief, min(6, math.ceil(index / 2)), beat)
-            dialogue = str(row.get("对白", row.get("台词对白", "—"))).strip() or "—"
-            narration = str(row.get("旁白", "")).strip()
-            if not narration and dialogue in {"", "—"} and index == 1:
-                narration = self._build_group_narration(brief, beat, str(row.get("画面内容", brief["key_scene"])))
-            speaker = self._canonicalize_character_name(
-                str(row.get("对白角色", row.get("角色", self._default_dialogue_speaker(beat)))).strip()
-                or self._default_dialogue_speaker(beat)
-            )
-            present_characters = self._normalize_present_characters(row=row, speaker=speaker, beat=beat)
-            canonical_role_text = "、".join(present_characters) if present_characters else str(row.get("角色", self.source_title))
-            normalized.append(
-                {
-                    "分组": str(row.get("分组", f"第{min(6, math.ceil(index / 2))}组")),
-                    "15秒段": str(row.get("15秒段", f"{cursor}-{end_time}秒")),
-                    "镜头号": index,
-                    "时长(s)": round(duration, 1),
-                    "起始时间": round(cursor, 1),
-                    "结束时间": end_time,
-                    "场景/时间": scene_value,
-                    "镜头景别": str(row.get("镜头景别", "中景")),
-                    "镜头运动": str(row.get("镜头运动", "缓推")),
-                    "画面内容": str(row.get("画面内容", brief["key_scene"])),
-                    "人物动作/神态": str(row.get("人物动作/神态", brief["emotion"])),
-                    "旁白": narration,
-                    "对白角色": speaker,
-                    "对白": dialogue,
-                    "台词对白": dialogue,
-                    "角色": canonical_role_text,
-                    "出镜角色": "、".join(present_characters),
-                    "音效": str(row.get("音效", "氛围环境声")),
-                    "音频设计": str(row.get("音频设计", self._build_group_audio_beat(beat))),
-                    "音乐": str(row.get("音乐", brief["emotion"])),
-                    "节奏目的": beat,
-                    "关键帧优先级": self._coerce_priority(row.get("关键帧优先级", 3), default=3),
-                    "blueprint_shot_count": int(row.get("blueprint_shot_count") or shot_limit),
-                    "blueprint_keyframe_count": int(row.get("blueprint_keyframe_count") or self.keyframe_count),
-                }
-            )
-            cursor = end_time
-        return normalized or self._fallback_storyboard(brief, "")
-
     def _normalize_present_characters(self, *, row: dict[str, Any], speaker: str, beat: str) -> list[str]:
         asset_lock = self._current_asset_lock()
         explicit_tokens = split_character_tokens(str(row.get("出镜角色", "")).strip())
@@ -1221,19 +926,6 @@ class ChapterFactoryRunner:
             self._ensure_storyboard_quality_anchors(brief, working_rows)
         return working_rows
 
-    def _rebalance_storyboard_durations(self, rows: list[dict[str, Any]]) -> None:
-        if not rows:
-            return
-        target_duration = float(self.storyboard_profile.get("target_duration_seconds", 96.0) or 96.0)
-        durations = [max(3.0, float(row.get("时长(s)", 3.0) or 3.0)) for row in rows]
-        current_total = sum(durations)
-        if not (90 <= current_total <= 120):
-            scale = target_duration / max(current_total, 1.0)
-            durations = [round(max(3.0, duration * scale), 1) for duration in durations]
-            delta = round(target_duration - sum(durations), 1)
-            durations[-1] = round(max(3.0, durations[-1] + delta), 1)
-        self._reflow_storyboard_timing(rows, durations)
-
     def _reflow_storyboard_timing(self, rows: list[dict[str, Any]], durations: list[float]) -> None:
         cursor = 0.0
         for row, duration in zip(rows, durations):
@@ -1243,34 +935,6 @@ class ChapterFactoryRunner:
             row["结束时间"] = end_time
             row["15秒段"] = f"{round(cursor, 1)}-{end_time}秒"
             cursor = end_time
-
-    def _ensure_storyboard_quality_anchors(self, brief: dict[str, Any], rows: list[dict[str, Any]]) -> None:
-        if not rows:
-            return
-        rows[0]["节奏目的"] = "开场钩子"
-        rows[0]["画面内容"] = self._append_unique_text(str(rows[0].get("画面内容", "")), brief["key_scene"])
-        rows[-1]["节奏目的"] = "结尾反转/尾钩"
-        rows[-1]["画面内容"] = self._append_unique_text(str(rows[-1].get("画面内容", "")), f"尾钩：{brief['summary']}")
-
-        memorable_line = str(brief.get("memorable_line", "")).strip()
-        if memorable_line and memorable_line not in json.dumps(rows, ensure_ascii=False):
-            anchor_index = 1 if len(rows) > 1 else 0
-            rows[anchor_index]["对白"] = memorable_line
-            rows[anchor_index]["台词对白"] = memorable_line
-            rows[anchor_index]["对白角色"] = str(rows[anchor_index].get("对白角色", "主角")).strip() or "主角"
-            rows[anchor_index]["画面内容"] = self._append_unique_text(str(rows[anchor_index].get("画面内容", "")), f"名台词爆点：{memorable_line}")
-            rows[anchor_index]["节奏目的"] = self._append_unique_text(str(rows[anchor_index].get("节奏目的", "")), "名台词爆点")
-
-        world_rule = str(brief.get("world_rule", "")).strip()
-        if world_rule and world_rule not in json.dumps(rows, ensure_ascii=False):
-            anchor_index = min(len(rows) - 1, max(1, len(rows) // 2))
-            rows[anchor_index]["画面内容"] = self._append_unique_text(str(rows[anchor_index].get("画面内容", "")), world_rule)
-            if str(rows[anchor_index].get("台词对白", "")).strip() in {"", "—"}:
-                rows[anchor_index]["对白"] = world_rule
-                rows[anchor_index]["台词对白"] = world_rule
-                rows[anchor_index]["对白角色"] = str(rows[anchor_index].get("对白角色", "旁白")).strip() or "旁白"
-            rows[anchor_index]["节奏目的"] = self._append_unique_text(str(rows[anchor_index].get("节奏目的", "")), "规则落地")
-            rows[anchor_index]["旁白"] = self._append_unique_text(str(rows[anchor_index].get("旁白", "")), world_rule)
 
     def _apply_feedback_notes(self, brief: dict[str, Any], rows: list[dict[str, Any]], feedback: list[str]) -> None:
         if not rows:
@@ -1336,21 +1000,6 @@ class ChapterFactoryRunner:
     def _summarize_focus(self, text: str, *, fallback: str = "") -> str:
         compact = self._condense_text(text, limit=18)
         return compact or fallback
-
-    def _build_story_chunks(self, source_text: str, brief: dict[str, Any]) -> list[str]:
-        raw_text = source_text or brief["summary"]
-        normalized = re.sub(r"\s+", " ", raw_text).strip()
-        parts = [item.strip() for item in re.split(r"[。！？!?；;…]+", normalized) if item.strip()]
-        chunks = [self._condense_text(item, limit=34) for item in parts[:8]]
-        if brief.get("summary"):
-            chunks.insert(0, self._condense_text(brief["summary"], limit=34))
-        if brief.get("key_scene"):
-            chunks.insert(0, self._condense_text(brief["key_scene"], limit=34))
-        unique_chunks: list[str] = []
-        for item in chunks:
-            if item and item not in unique_chunks:
-                unique_chunks.append(item)
-        return unique_chunks[:6] or [self._condense_text(brief["summary"], limit=34)]
 
     def _pick_group_value(self, values: list[str], index: int, *, fallback: str) -> str:
         clean_values = [str(item).strip() for item in values if str(item).strip()]
@@ -1527,6 +1176,7 @@ class ChapterFactoryRunner:
             return music_map[beat]
         return music_map.get(beat, emotion)
 
+    # Phase 2: convert approved storyboard rows into timeline-aware audio plans.
     def _build_audio_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]]) -> dict[str, Any]:
         asset_lock = self._current_asset_lock()
         timing_windows = self._build_voice_timing_windows(storyboard_rows)
@@ -2021,37 +1671,6 @@ class ChapterFactoryRunner:
                 value = int(max(-1.0, min(1.0, base + pulse)) * 32767)
                 wav_file.writeframesraw(struct.pack("<h", value))
 
-    def _render_chapter_video(self, storyboard_rows: list[dict[str, Any]], keyframe_images: list[Path], output_path: Path, brief: dict[str, Any], voiceover_path: Path, ambience_path: Path) -> None:
-        silent_path = output_path.with_name("chapter_preview_silent.mp4")
-        writer = imageio.get_writer(silent_path, fps=DEFAULT_FPS, codec="libx264")
-        try:
-            for row in storyboard_rows:
-                image_path = keyframe_images[min((int(row["镜头号"]) - 1) * len(keyframe_images) // max(1, len(storyboard_rows)), len(keyframe_images) - 1)]
-                frame_count = max(1, int(float(row["时长(s)"]) * DEFAULT_FPS))
-                for frame_index in range(frame_count):
-                    progress = frame_index / max(1, frame_count - 1)
-                    writer.append_data(self._compose_frame(image_path=image_path, row=row, brief=brief, progress=progress))
-        finally:
-            writer.close()
-        self._mux_audio(silent_path, voiceover_path, ambience_path, output_path)
-        silent_path.unlink(missing_ok=True)
-
-    def _compose_frame(self, *, image_path: Path, row: dict[str, Any], brief: dict[str, Any], progress: float) -> np.ndarray:
-        canvas = Image.open(image_path).convert("RGB").resize((1280, 720))
-        draw = ImageDraw.Draw(canvas)
-        header_font = self.load_font(size=24)
-        body_font = self.load_font(size=30)
-        subtitle_font = self.load_font(size=28)
-        draw.rounded_rectangle((32, 24, 1248, 88), radius=18, fill=(8, 12, 20))
-        draw.text((56, 40), f"第{brief['chapter']:02d}章 {brief['title']} | 镜头 {row['镜头号']:02d} | {row['节奏目的']}", font=header_font, fill=(245, 245, 245))
-        overlay = f"{row['画面内容']} | {row['人物动作/神态']}"
-        for offset, line in enumerate(textwrap.wrap(overlay, width=24)[:2]):
-            draw.text((56, 560 + offset * 34), line, font=body_font, fill=(255, 245, 228))
-        if row["台词对白"] not in {"", "—"}:
-            draw.rounded_rectangle((80, 630, 1200, 700), radius=16, fill=(0, 0, 0))
-            draw.text((110, 650), row["台词对白"], font=subtitle_font, fill=(255, 255, 255))
-        return np.array(canvas)
-
     def _mux_audio(self, silent_video: Path, voiceover: Path, ambience: Path, output_path: Path) -> None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         command = [
@@ -2150,30 +1769,12 @@ class ChapterFactoryRunner:
             )
         return "\n".join(lines)
 
-    def _build_chapter_preview_html(self, brief: dict[str, Any], rows: list[dict[str, Any]], keyframe_images: list[Path]) -> str:
-        image_tiles = "\n".join(f"<li><img src=\"../images/{path.name}\" alt=\"{path.name}\" style=\"width:100%\"></li>" for path in keyframe_images)
-        shot_items = "\n".join(f"<li>镜头{row['镜头号']:02d}｜{row['时长(s)']}s｜{row['画面内容']}</li>" for row in rows)
-        return f"""<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>第{brief['chapter']:02d}章预览</title></head><body><h1>第{brief['chapter']:02d}章：{brief['title']}</h1><video src="chapter_preview.mp4" controls style="width:100%;max-width:960px"></video><h2>关键帧</h2><ul style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;list-style:none;padding:0">{image_tiles}</ul><h2>镜头清单</h2><ol>{shot_items}</ol></body></html>"""
-
     def _build_preview_html(self) -> str:
         cards = []
         for item in self.chapter_packages:
             chapter = item["chapter"]
             cards.append(f"<li><a href=\"../chapters/chapter_{chapter:02d}/preview/index.html\">第{chapter:02d}章：{item['title']}</a> | <a href=\"../chapters/chapter_{chapter:02d}/delivery/chapter_final_cut.mp4\">交付视频</a></li>")
         return f"""<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>{self.source_title} 漫剧预览</title></head><body><h1>{self.source_title}</h1><video src="preview.mp4" controls style="width:100%;max-width:1080px"></video><h2>章节交付</h2><ol>{''.join(cards)}</ol></body></html>"""
-
-    def _build_chapter_qa_markdown(self, brief: dict[str, Any], qa_rounds: list[dict[str, Any]], final_review: dict[str, Any]) -> str:
-        lines = [f"# 第{brief['chapter']:02d}章 QA 报告", "", f"- 结论：{'通过' if final_review['passed'] else '未通过'}", f"- 综合评分：{final_review['overall']}", ""]
-        for item in qa_rounds:
-            lines.append(f"## Round {item['round']}")
-            lines.append(f"- 通过：{item['passed']}")
-            lines.append(f"- 分数：{json.dumps(item['scores'], ensure_ascii=False)}")
-            if item["issues"]:
-                lines.extend([f"- 问题：{issue}" for issue in item["issues"]])
-            if item["blockers"]:
-                lines.extend([f"- 阻塞：{issue}" for issue in item["blockers"]])
-            lines.append("")
-        return "\n".join(lines)
 
     def _build_qa_overview(self) -> str:
         passed = sum(1 for item in self.chapter_packages if item["qa"]["passed"])
@@ -2264,28 +1865,6 @@ class ChapterFactoryRunner:
             )
 
         self._write_manifest(manifest_path)
-
-    def _write_manifest(self, manifest_path: Path) -> None:
-        artifact_paths = []
-        for item in self.chapter_packages:
-            artifact_paths.extend(item["artifact_paths"])
-        manifest_path.write_text(
-            json.dumps(
-                {
-                    "job_id": self.context.job_id,
-                    "project_id": self.context.project_id,
-                    "capability": "manga",
-                    "chapter_count": self.episode_count,
-                    "chapter_keyframe_count": self.keyframe_count,
-                    "chapter_shot_count": self.shot_count,
-                    "asset_lock": self._asset_lock_summary(),
-                    "artifacts": sorted(set(artifact_paths)),
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
 
     def _build_artifacts(self, research_path: Path, screenplay_path: Path, art_path: Path, prompts_path: Path, storyboard_path: Path, chapters_index_path: Path, qa_overview_path: Path, asset_lock_snapshot_path: Path, lead_image_path: Path, preview_path: Path, preview_video_path: Path, delivery_video_path: Path, manifest_path: Path) -> list[ArtifactPreview]:
         artifacts = [
@@ -2679,6 +2258,7 @@ class ChapterFactoryRunner:
             }
         )
 
+    # Phase 3: render chapter media from storyboard/audio/video plans.
     def _render_chapter_video(
         self,
         video_plan: dict[str, Any],
@@ -2730,63 +2310,9 @@ class ChapterFactoryRunner:
             progress = frame_index / max(1, frame_count - 1)
             writer.append_data(self._compose_frame(image_path=image_path, row=row, brief=brief, progress=progress))
 
-    def _append_video_segment_frames(
-        self,
-        *,
-        writer,
-        source_video_path: Path,
-        fallback_image_path: Path,
-        target_duration_seconds: float,
-        row: dict[str, Any],
-        brief: dict[str, Any],
-    ) -> None:
-        if not source_video_path.exists():
-            self._append_local_segment_frames(
-                writer=writer,
-                image_path=fallback_image_path,
-                target_duration_seconds=target_duration_seconds,
-                row=row,
-                brief=brief,
-            )
-            return
-
-        reader = imageio.get_reader(source_video_path)
-        sampled_frames: list[np.ndarray] = []
-        try:
-            meta = reader.get_meta_data()
-            src_fps = float(meta.get("fps", DEFAULT_FPS) or DEFAULT_FPS)
-            stride = max(1, int(round(src_fps / DEFAULT_FPS)))
-            for index, frame in enumerate(reader):
-                if index % stride == 0:
-                    sampled_frames.append(frame)
-            if not sampled_frames:
-                for frame in reader:
-                    sampled_frames.append(frame)
-                    break
-        finally:
-            reader.close()
-
-        if not sampled_frames:
-            self._append_local_segment_frames(
-                writer=writer,
-                image_path=fallback_image_path,
-                target_duration_seconds=target_duration_seconds,
-                row=row,
-                brief=brief,
-            )
-            return
-
-        target_frame_count = max(1, int(target_duration_seconds * DEFAULT_FPS))
-        for frame_index in range(target_frame_count):
-            progress = frame_index / max(1, target_frame_count - 1)
-            frame = sampled_frames[frame_index % len(sampled_frames)]
-            writer.append_data(self._compose_frame_from_array(frame=frame, row=row, brief=brief, progress=progress))
-
     def _compose_frame(self, *, image_path: Path, row: dict[str, Any], brief: dict[str, Any], progress: float) -> np.ndarray:
-        canvas = Image.open(image_path).convert("RGB")
-        canvas = self._apply_motion_transform(canvas=canvas, movement=self._row_movement(row), progress=progress)
-        canvas = canvas.resize((1280, 720))
-        return self._overlay_frame(canvas=canvas, row=row, brief=brief)
+        frame = imageio.imread(image_path)
+        return self._compose_frame_from_array(frame=frame, row=row, brief=brief, progress=progress)
 
     def _compose_frame_from_array(self, *, frame: np.ndarray, row: dict[str, Any], brief: dict[str, Any], progress: float) -> np.ndarray:
         canvas = Image.fromarray(frame).convert("RGB")
@@ -2916,121 +2442,6 @@ class ChapterFactoryRunner:
         for prev, current in zip(sampled, sampled[1:]):
             diffs.append(float(np.mean(np.abs(current - prev)) / 255.0))
         return {"motion_score": round(float(np.mean(diffs)), 6), "sampled_frames": len(sampled)}
-
-    def _review_final(
-        self,
-        brief: dict[str, Any],
-        storyboard_rows: list[dict[str, Any]],
-        plan_review: dict[str, Any],
-        preview_video: Path,
-        delivery_video: Path,
-        voiceover: Path,
-        storyboard_xlsx: Path,
-        video_plan_path: Path,
-        video_plan: dict[str, Any],
-    ) -> dict[str, Any]:
-        blockers = list(plan_review["blockers"])
-        issues = list(plan_review["issues"])
-        dialogue_count = len([row for row in storyboard_rows if self._row_dialogue(row) not in {"", "-", "—", "无"}])
-        narration_count = len([row for row in storyboard_rows if self._row_narration(row) not in {"", "-", "—", "无"}])
-        polluted_scene_rows = [
-            self._row_shot_no(row)
-            for row in storyboard_rows
-            if re.search(r"第\d+章|第\d+组|\d+秒|scene|chapter", self._row_scene(row), flags=re.IGNORECASE)
-        ]
-        if not preview_video.exists() or not delivery_video.exists():
-            blockers.append("章节视频缺失")
-        if not storyboard_xlsx.exists():
-            blockers.append("章节分镜交付缺失")
-        if not voiceover.exists():
-            blockers.append("章节旁白缺失")
-        if not video_plan_path.exists():
-            blockers.append("章节视频计划缺失")
-        if dialogue_count <= 0:
-            blockers.append("章节对白缺失")
-        if narration_count <= 0:
-            blockers.append("章节旁白文案缺失")
-        if polluted_scene_rows:
-            blockers.append("分镜场景字段仍包含章节/时间字卡污染")
-
-        expected_duration = round(sum(self._row_duration(row) for row in storyboard_rows), 2)
-        preview_meta = self._probe_video_metadata(preview_video) if preview_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        delivery_meta = self._probe_video_metadata(delivery_video) if delivery_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        motion = self._analyze_video_motion(preview_video) if preview_video.exists() else {"motion_score": 0.0, "sampled_frames": 0}
-        actual_duration = float(preview_meta.get("duration_seconds", 0.0) or 0.0)
-        delivery_duration = float(delivery_meta.get("duration_seconds", 0.0) or 0.0)
-        motion_score = float(motion.get("motion_score", 0.0) or 0.0)
-        summary = dict(video_plan.get("summary", {}))
-
-        if actual_duration < max(30.0, expected_duration * 0.7):
-            blockers.append("章节视频时长明显不足")
-        elif abs(actual_duration - expected_duration) > max(12.0, expected_duration * 0.25):
-            issues.append("章节视频时长与分镜计划偏差较大")
-        if abs(actual_duration - delivery_duration) > 1.5:
-            blockers.append("预览视频与交付视频时长不一致")
-        if motion_score < VIDEO_MOTION_SCORE_THRESHOLD:
-            blockers.append("章节视频运动性不足，接近静态拼片")
-
-        requested_real_video = bool(summary.get("requested_real_video"))
-        real_asset_success_count = int(summary.get("real_asset_success_count", 0) or 0)
-        fallback_ratio = float(summary.get("fallback_ratio", 0.0) or 0.0)
-        if requested_real_video and real_asset_success_count <= 0:
-            blockers.append("已启用真图模式，但未生成任何真实图生视频片段")
-        elif requested_real_video and fallback_ratio > REAL_VIDEO_FALLBACK_WARNING_RATIO:
-            issues.append("真实视频片段回退比例偏高")
-
-        passed = not blockers and plan_review["passed"]
-        summary_text = f"第{int(brief['chapter']):02d}章{'通过' if passed else '未通过'} QA"
-        return {
-            "passed": passed,
-            "overall": plan_review["overall"],
-            "scores": plan_review["scores"],
-            "issues": issues,
-            "blockers": blockers,
-            "summary": summary_text,
-            "expected_duration_seconds": expected_duration,
-            "preview_duration_seconds": round(actual_duration, 2),
-            "delivery_duration_seconds": round(delivery_duration, 2),
-            "motion_score": round(motion_score, 6),
-            "real_asset_success_count": real_asset_success_count,
-            "real_segment_count": int(summary.get("real_segment_count", 0) or 0),
-            "local_segment_count": int(summary.get("local_segment_count", 0) or 0),
-            "fallback_ratio": round(fallback_ratio, 4),
-            "dialogue_count": dialogue_count,
-            "narration_count": narration_count,
-            "polluted_scene_rows": polluted_scene_rows,
-        }
-
-    def _resolve_target_duration(self, payload: dict[str, Any]) -> float | None:
-        raw = payload.get("target_duration_seconds")
-        if raw in (None, ""):
-            return None
-        try:
-            value = float(raw)
-        except (TypeError, ValueError):
-            return None
-        return max(20.0, min(180.0, value))
-
-    def _unique_texts(self, values: list[str]) -> list[str]:
-        unique: list[str] = []
-        seen: set[str] = set()
-        for value in values:
-            raw = str(value or "").strip()
-            item = self._condense_text(raw, limit=48)
-            tail = raw[-1] if raw else ""
-            if tail and re.match(r"[。！？!?]", tail) and item and not item.endswith(("。", "！", "？", "!", "?")):
-                item = f"{item}{tail}"
-            if not item or item in seen:
-                continue
-            seen.add(item)
-            unique.append(item)
-        return unique
-
-    def _resolve_story_duration_target(self, rows: list[dict[str, Any]]) -> float:
-        if self.target_duration_seconds is not None:
-            return round(self.target_duration_seconds, 1)
-        suggested_total = sum(self._suggest_row_duration(row) for row in rows)
-        return round(max(MIN_CHAPTER_DURATION_SECONDS, min(MAX_CHAPTER_DURATION_SECONDS, suggested_total)), 1)
 
     def _suggest_row_duration(self, row: dict[str, Any]) -> float:
         narration = self._row_narration(row)
@@ -3245,156 +2656,6 @@ class ChapterFactoryRunner:
                 row["台词对白"] = dialogue
                 row["dialogue"] = dialogue
 
-    def _append_video_segment_frames(
-        self,
-        *,
-        writer,
-        source_video_path: Path,
-        fallback_image_path: Path,
-        target_duration_seconds: float,
-        row: dict[str, Any],
-        brief: dict[str, Any],
-    ) -> None:
-        if not source_video_path.exists():
-            self._append_local_segment_frames(
-                writer=writer,
-                image_path=fallback_image_path,
-                target_duration_seconds=target_duration_seconds,
-                row=row,
-                brief=brief,
-            )
-            return
-
-        reader = imageio.get_reader(source_video_path)
-        sampled_frames: list[np.ndarray] = []
-        try:
-            meta = reader.get_meta_data()
-            src_fps = float(meta.get("fps", DEFAULT_FPS) or DEFAULT_FPS)
-            stride = max(1, int(round(src_fps / DEFAULT_FPS)))
-            for index, frame in enumerate(reader):
-                if index % stride == 0:
-                    sampled_frames.append(frame)
-            if not sampled_frames:
-                for frame in reader:
-                    sampled_frames.append(frame)
-                    break
-        finally:
-            reader.close()
-
-        if not sampled_frames:
-            self._append_local_segment_frames(
-                writer=writer,
-                image_path=fallback_image_path,
-                target_duration_seconds=target_duration_seconds,
-                row=row,
-                brief=brief,
-            )
-            return
-
-        target_frame_count = max(1, int(target_duration_seconds * DEFAULT_FPS))
-        if len(sampled_frames) == 1:
-            stretched_frames = sampled_frames * target_frame_count
-        else:
-            stretched_frames = []
-            for frame_index in range(target_frame_count):
-                progress = frame_index / max(1, target_frame_count - 1)
-                source_index = min(len(sampled_frames) - 1, int(round(progress * (len(sampled_frames) - 1))))
-                stretched_frames.append(sampled_frames[source_index])
-
-        for frame_index, frame in enumerate(stretched_frames):
-            progress = frame_index / max(1, len(stretched_frames) - 1)
-            writer.append_data(self._compose_frame_from_array(frame=frame, row=row, brief=brief, progress=progress))
-
-
-    def _review_final(
-        self,
-        brief: dict[str, Any],
-        storyboard_rows: list[dict[str, Any]],
-        plan_review: dict[str, Any],
-        preview_video: Path,
-        delivery_video: Path,
-        voiceover: Path,
-        storyboard_xlsx: Path,
-        video_plan_path: Path,
-        video_plan: dict[str, Any],
-    ) -> dict[str, Any]:
-        blockers = list(plan_review["blockers"])
-        issues = list(plan_review["issues"])
-        dialogue_count = len([row for row in storyboard_rows if self._row_dialogue(row) not in {"", "-", "无", "空"}])
-        narration_count = len([row for row in storyboard_rows if self._row_narration(row) not in {"", "-", "无", "空"}])
-        polluted_scene_rows = [
-            self._row_shot_no(row)
-            for row in storyboard_rows
-            if re.search(r"第\d+章|第\d+组|scene|chapter|\d+:\d+", self._row_scene(row), flags=re.IGNORECASE)
-        ]
-        if not preview_video.exists() or not delivery_video.exists():
-            blockers.append("章节预览或交付视频缺失")
-        if not storyboard_xlsx.exists():
-            blockers.append("章节分镜表缺失")
-        if not voiceover.exists():
-            blockers.append("章节配音文件缺失")
-        if not video_plan_path.exists():
-            blockers.append("章节视频计划文件缺失")
-        if dialogue_count <= 0:
-            blockers.append("章节缺少对白")
-        if narration_count <= 0:
-            blockers.append("章节缺少旁白")
-        if polluted_scene_rows:
-            blockers.append("分镜场景字段混入章节号、分组号或时间标签")
-
-        expected_duration = round(sum(self._row_duration(row) for row in storyboard_rows), 2)
-        target_duration = self._resolve_story_duration_target(storyboard_rows)
-        lower_bound = max(MIN_CHAPTER_DURATION_SECONDS, target_duration * 0.75)
-        upper_bound = min(MAX_CHAPTER_DURATION_SECONDS + 20.0, target_duration * 1.25)
-        preview_meta = self._probe_video_metadata(preview_video) if preview_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        delivery_meta = self._probe_video_metadata(delivery_video) if delivery_video.exists() else {"duration_seconds": 0.0, "frame_count": 0, "fps": 0.0}
-        motion = self._analyze_video_motion(preview_video) if preview_video.exists() else {"motion_score": 0.0, "sampled_frames": 0}
-        actual_duration = float(preview_meta.get("duration_seconds", 0.0) or 0.0)
-        delivery_duration = float(delivery_meta.get("duration_seconds", 0.0) or 0.0)
-        motion_score = float(motion.get("motion_score", 0.0) or 0.0)
-        summary = dict(video_plan.get("summary", {}))
-
-        if actual_duration < lower_bound:
-            blockers.append("成片时长低于当前章节内容可支撑的下限")
-        elif actual_duration > upper_bound:
-            issues.append("成片时长明显超出当前章节内容支撑范围")
-        elif abs(actual_duration - expected_duration) > max(10.0, expected_duration * 0.25):
-            issues.append("成片时长与分镜预估时长偏差较大")
-        if abs(actual_duration - delivery_duration) > 1.5:
-            blockers.append("预览视频与交付视频时长不一致")
-        if motion_score < VIDEO_MOTION_SCORE_THRESHOLD:
-            blockers.append("成片运动变化不足")
-
-        requested_real_video = bool(summary.get("requested_real_video"))
-        real_asset_success_count = int(summary.get("real_asset_success_count", 0) or 0)
-        fallback_ratio = float(summary.get("fallback_ratio", 0.0) or 0.0)
-        if requested_real_video and real_asset_success_count <= 0:
-            blockers.append("已启用真图模式，但未生成任何真实图生视频片段")
-        elif requested_real_video and fallback_ratio > REAL_VIDEO_FALLBACK_WARNING_RATIO:
-            issues.append("图生视频片段回退比例偏高")
-
-        passed = not blockers and plan_review["passed"]
-        summary_text = f"第{int(brief['chapter']):02d}章{'通过' if passed else '未通过'} QA"
-        return {
-            "passed": passed,
-            "overall": plan_review["overall"],
-            "scores": plan_review["scores"],
-            "issues": issues,
-            "blockers": blockers,
-            "summary": summary_text,
-            "expected_duration_seconds": expected_duration,
-            "preview_duration_seconds": round(actual_duration, 2),
-            "delivery_duration_seconds": round(delivery_duration, 2),
-            "motion_score": round(motion_score, 6),
-            "real_asset_success_count": real_asset_success_count,
-            "real_segment_count": int(summary.get("real_segment_count", 0) or 0),
-            "local_segment_count": int(summary.get("local_segment_count", 0) or 0),
-            "fallback_ratio": round(fallback_ratio, 4),
-            "dialogue_count": dialogue_count,
-            "narration_count": narration_count,
-            "polluted_scene_rows": polluted_scene_rows,
-        }
-
     def _build_chapter_preview_html(
         self,
         brief: dict[str, Any],
@@ -3439,6 +2700,7 @@ class ChapterFactoryRunner:
         )
 
     # Override historical mojibake variants so the active QA gate uses clean checks.
+    # Phase 4: QA and delivery gating.
     def _review_plan(self, brief: dict[str, Any], storyboard_rows: list[dict[str, Any]], audio_plan: dict[str, Any]) -> dict[str, Any]:
         asset_lock = self._current_asset_lock()
         joined = json.dumps(storyboard_rows, ensure_ascii=False)
