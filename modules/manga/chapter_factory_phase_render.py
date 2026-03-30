@@ -16,6 +16,7 @@ import imageio.v2 as imageio
 import numpy as np
 from PIL import Image, ImageDraw
 
+from backend.config import ROOT_DIR
 from modules.manga.chapter_factory_constants import (
     DEFAULT_KEYFRAME_COUNT,
     DEFAULT_FPS,
@@ -325,6 +326,66 @@ class ChapterFactoryRenderPhaseMixin:
             writer.close()
         self._mux_audio(silent_path, voiceover_path, ambience_path, output_path)
         silent_path.unlink(missing_ok=True)
+
+    def _append_video_segment_frames(
+        self,
+        *,
+        writer,
+        source_video_path: Path,
+        fallback_image_path: Path,
+        target_duration_seconds: float,
+        row: dict[str, Any],
+        brief: dict[str, Any],
+    ) -> None:
+        if not source_video_path.exists():
+            self._append_local_segment_frames(
+                writer=writer,
+                image_path=fallback_image_path,
+                target_duration_seconds=target_duration_seconds,
+                row=row,
+                brief=brief,
+            )
+            return
+
+        reader = imageio.get_reader(source_video_path)
+        sampled_frames: list[np.ndarray] = []
+        try:
+            meta = reader.get_meta_data()
+            src_fps = float(meta.get("fps", DEFAULT_FPS) or DEFAULT_FPS)
+            stride = max(1, int(round(src_fps / DEFAULT_FPS)))
+            for index, frame in enumerate(reader):
+                if index % stride == 0:
+                    sampled_frames.append(frame)
+            if not sampled_frames:
+                for frame in reader:
+                    sampled_frames.append(frame)
+                    break
+        finally:
+            reader.close()
+
+        if not sampled_frames:
+            self._append_local_segment_frames(
+                writer=writer,
+                image_path=fallback_image_path,
+                target_duration_seconds=target_duration_seconds,
+                row=row,
+                brief=brief,
+            )
+            return
+
+        target_frame_count = max(1, int(target_duration_seconds * DEFAULT_FPS))
+        if len(sampled_frames) == 1:
+            stretched_frames = sampled_frames * target_frame_count
+        else:
+            stretched_frames = []
+            for frame_index in range(target_frame_count):
+                progress = frame_index / max(1, target_frame_count - 1)
+                source_index = min(len(sampled_frames) - 1, int(round(progress * (len(sampled_frames) - 1))))
+                stretched_frames.append(sampled_frames[source_index])
+
+        for frame_index, frame in enumerate(stretched_frames):
+            progress = frame_index / max(1, len(stretched_frames) - 1)
+            writer.append_data(self._compose_frame_from_array(frame=frame, row=row, brief=brief, progress=progress))
 
     def _append_local_segment_frames(
         self,

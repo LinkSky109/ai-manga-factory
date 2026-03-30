@@ -9,6 +9,7 @@ from unittest import mock
 from backend.schemas import WorkflowStep
 from modules.base import ExecutionContext, PlannedJob
 from modules.manga import chapter_factory
+from modules.manga import chapter_factory_phase_render
 from modules.manga.service import MangaCapability
 
 
@@ -421,6 +422,97 @@ class ChapterFactoryAssetLockTests(unittest.TestCase):
         self.assertIn("asplit=2[voice_duck][voice_mix]", filter_graph)
         self.assertIn("[ambience_bus][voice_duck]sidechaincompress", filter_graph)
         self.assertIn("[voice_mix][ambience_ducked]amix", filter_graph)
+
+    def test_render_chapter_video_uses_real_video_segments_when_available(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            runner = make_runner(tmp_dir, asset_lock=build_asset_lock_payload())
+            output_path = Path(tmp_dir) / "chapter_preview.mp4"
+            voiceover = Path(tmp_dir) / "voiceover.mp3"
+            ambience = Path(tmp_dir) / "ambience.wav"
+            image_path = Path(tmp_dir) / "keyframe.png"
+            source_video_path = Path(tmp_dir) / "segment.mp4"
+            for path in (voiceover, ambience, image_path, source_video_path):
+                path.write_bytes(b"stub")
+            row = {
+                "镜头号": 1,
+                "时长(s)": 3,
+                "镜头运动": "缓推",
+                "对话": "",
+            }
+            video_plan = {
+                "assets": [],
+                "segments": [
+                    {
+                        "source_kind": "ark_i2v",
+                        "source_video_path": str(source_video_path),
+                        "image_path": str(image_path),
+                        "duration_seconds": 3.0,
+                        "row": row,
+                    }
+                ],
+            }
+            calls: list[tuple[str, str]] = []
+
+            class StubWriter:
+                def append_data(self, _frame) -> None:
+                    return None
+
+                def close(self) -> None:
+                    return None
+
+            runner._render_real_video_assets = lambda **_kwargs: None
+            runner._append_video_segment_frames = lambda **_kwargs: calls.append(("video", _kwargs["source_video_path"].name))
+            runner._append_local_segment_frames = lambda **_kwargs: calls.append(("local", _kwargs["image_path"].name))
+            runner._mux_audio = lambda *_args, **_kwargs: output_path.write_bytes(b"video")
+
+            with mock.patch.object(chapter_factory_phase_render.imageio, "get_writer", return_value=StubWriter()):
+                runner._render_chapter_video(video_plan, output_path, make_brief(), voiceover, ambience)
+
+        self.assertEqual(calls, [("video", "segment.mp4")])
+
+    def test_render_real_video_assets_fallback_records_incident_without_name_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            runner = make_runner(tmp_dir, asset_lock=build_asset_lock_payload())
+            clip_path = Path(tmp_dir) / "segment.mp4"
+            image_path = Path(tmp_dir) / "keyframe.png"
+            image_path.write_bytes(b"img")
+
+            class FailingProvider:
+                last_video_task_details: dict[str, object] = {}
+
+                def generate_video_to_file(self, *_args, **_kwargs):
+                    raise RuntimeError("provider failed")
+
+            runner.provider = FailingProvider()
+            runner.use_real_images = True
+            runner.requirement_miner = mock.Mock()
+            video_plan = {
+                "assets": [
+                    {
+                        "asset_id": "keyframe_01",
+                        "clip_path": str(clip_path),
+                        "image_path": str(image_path),
+                        "prompt": "prompt",
+                        "render_mode": "ark_i2v",
+                        "render_duration_seconds": 5,
+                        "status": "pending",
+                    }
+                ],
+                "segments": [
+                    {
+                        "asset_id": "keyframe_01",
+                        "source_kind": "ark_i2v",
+                        "source_video_path": str(clip_path),
+                    }
+                ],
+                "summary": {},
+            }
+
+            runner._render_real_video_assets(brief=make_brief(), video_plan=video_plan)
+
+        self.assertEqual(video_plan["assets"][0]["status"], "fallback_local")
+        self.assertEqual(video_plan["segments"][0]["source_kind"], "local_pan")
+        runner.requirement_miner.record_incident.assert_called_once()
 
     def test_generate_keyframe_prompts_injects_scene_and_character_locks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
