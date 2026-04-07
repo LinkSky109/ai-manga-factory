@@ -1,49 +1,62 @@
-FROM node:24-bookworm-slim AS web-builder
+FROM python:3.12-slim AS python-base
 
-WORKDIR /app/web
-COPY web/package.json web/package-lock.json ./
-RUN npm ci
-COPY web/ ./
-RUN npm run build
-
-FROM python:3.11-slim AS runtime
+ARG DEBIAN_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/debian
+ARG DEBIAN_SECURITY_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/debian-security
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    AI_MANGA_FACTORY_HOST=0.0.0.0 \
-    AI_MANGA_FACTORY_PORT=8000 \
-    AI_MANGA_FACTORY_RUNTIME_DIR=/var/lib/ai-manga-factory/runtime
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_INDEX_URL=${PIP_INDEX_URL} \
+    PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+      sed -i "s|http://deb.debian.org/debian|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources; \
+      sed -i "s|http://security.debian.org/debian-security|${DEBIAN_SECURITY_MIRROR}|g" /etc/apt/sources.list.d/debian.sources; \
+    fi \
+    && if [ -f /etc/apt/sources.list ]; then \
+      sed -i "s|http://deb.debian.org/debian|${DEBIAN_MIRROR}|g" /etc/apt/sources.list; \
+      sed -i "s|http://security.debian.org/debian-security|${DEBIAN_SECURITY_MIRROR}|g" /etc/apt/sources.list; \
+    fi \
+    && apt-get update -o Acquire::Retries=3 \
+    && apt-get install -y --no-install-recommends build-essential curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+FROM python-base AS api-runtime
 
-COPY backend ./backend
-COPY modules ./modules
-COPY shared ./shared
-COPY scripts ./scripts
-COPY adaptations ./adaptations
-COPY frontend ./frontend
-COPY agents ./agents
-COPY docs ./docs
-COPY start.sh ./start.sh
-COPY build_web.sh ./build_web.sh
-COPY start_web.sh ./start_web.sh
-COPY README.md ./README.md
-COPY --from=web-builder /app/web/dist ./web/dist
-COPY web/package.json ./web/package.json
+COPY apps/api/pyproject.toml /app/apps/api/pyproject.toml
+COPY apps/api/src /app/apps/api/src
+RUN pip install --no-cache-dir -e /app/apps/api
 
-RUN mkdir -p /app/data /app/secrets /var/lib/ai-manga-factory/runtime \
-    && chmod +x /app/start.sh /app/build_web.sh /app/start_web.sh
+WORKDIR /app/apps/api
 
-EXPOSE 8000
+FROM python-base AS worker-runtime
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).getcode() == 200 else 1)"
+COPY apps/worker/pyproject.toml /app/apps/worker/pyproject.toml
+COPY apps/worker/src /app/apps/worker/src
+COPY apps/api/src /app/apps/api/src
+RUN pip install --no-cache-dir -e /app/apps/worker
 
-CMD ["./start.sh", "backend"]
+WORKDIR /app/apps/worker
+
+FROM node:22-alpine AS web-build
+
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
+ENV npm_config_registry=${NPM_REGISTRY}
+
+WORKDIR /app/apps/web
+
+COPY apps/web/package.json /app/apps/web/package.json
+COPY apps/web/package-lock.json /app/apps/web/package-lock.json
+RUN npm install --ignore-scripts
+
+COPY apps/web /app/apps/web
+RUN npm run build
+
+FROM caddy:2.10-alpine AS web-runtime
+
+COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=web-build /app/apps/web/dist /srv

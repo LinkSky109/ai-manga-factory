@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-manga-factory-api"
+version = "0.1.0"
+description = "API service for AI Manga Factory"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn[standard]>=0.32,<1.0",
+  "pydantic>=2.9,<3.0",
+  "sqlalchemy>=2.0,<3.0",
+  "psycopg[binary]>=3.2,<4.0",
+  "httpx>=0.28,<1.0",
+  "boto3>=1.35,<2.0",
+  "quarkpan>=1.0.5,<2.0",
+  "aligo>=6.2.8,<7.0",
+  "volcengine-python-sdk[ark]>=5.0.17,<6.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

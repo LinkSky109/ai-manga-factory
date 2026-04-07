@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: ai-manga-factory-worker
+Version: 0.1.0
+Summary: Worker service for AI Manga Factory
+Requires-Python: >=3.11
+Requires-Dist: pydantic<3.0,>=2.9
+Requires-Dist: sqlalchemy<3.0,>=2.0
+Requires-Dist: psycopg[binary]<4.0,>=3.2
+Requires-Dist: boto3<2.0,>=1.35
+Requires-Dist: volcengine-python-sdk[ark]<6.0,>=5.0.17

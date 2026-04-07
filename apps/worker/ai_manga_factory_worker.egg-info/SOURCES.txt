@@ -1,0 +1,8 @@
+pyproject.toml
+./src/__init__.py
+./src/entrypoints/main.py
+ai_manga_factory_worker.egg-info/PKG-INFO
+ai_manga_factory_worker.egg-info/SOURCES.txt
+ai_manga_factory_worker.egg-info/dependency_links.txt
+ai_manga_factory_worker.egg-info/requires.txt
+ai_manga_factory_worker.egg-info/top_level.txt

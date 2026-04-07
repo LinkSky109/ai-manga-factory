@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: AI Manga Factory Dashboards
+    orgId: 1
+    folder: AI Manga Factory
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards

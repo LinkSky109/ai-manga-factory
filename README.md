@@ -1,208 +1,265 @@
 # AI 漫剧工厂
 
-## 项目定位
+工业级 AI 漫剧生产平台，面向项目制协作、资产一致性控制、可视化流程编排、模型监控与多阶段产物交付。
 
-这个目录只保留 `ai-manga-factory` 的业务代码、运行脚本、适配包、结果沉淀和项目级前后端。
+## 仓库状态
 
-它负责：
+当前仓库已进入工业化重构阶段：
 
-- 漫剧生产任务创建与执行
-- 小说适配包运行
-- Ark 图像与视频生成接入
-- 本地 API、CLI 和项目控制台
-- 结果沉淀、校验报告和 job 级证据管理
+- 新架构主路径：`apps/`、`packages/`、`infra/`、`docs/`
+- 历史实现归档：`legacy_archive/`
+- 当前进度：`Phase 1-4` 与 `Step 5-6` 核心链路已落地
 
-它不负责：
+## 顶层结构
 
-- 多项目协作流程编排
-- 外部管理模板维护
-- 项目外部目录中的管理材料生产
-
-## 当前目录
-
-- `backend/`：FastAPI API、存储、任务执行、管理概览接口
-- `frontend/`：旧版单文件控制台，保留为 `/legacy` 兜底入口
-- `web/`：新版前后端分离前端工程，基于 React + TypeScript + Vite
-- `modules/`：业务能力模块
-- `shared/`：共享工具、结果沉淀、运行时存储和 provider 逻辑
-- `scripts/`：运行、校验、建包、导入原文脚本
-- `adaptations/`：小说适配包与报告
-- `docs/`：项目文档
-- `agents/`：项目内角色配置
-- `data/`：运行时数据目录
-- `secrets/`：本地密钥目录
-
-## 前后端分离架构
-
-当前项目已经工程化为“后端 API + 独立前端工程”的结构：
-
-- 后端：`FastAPI`
-- 前端：`web/` 下的 `React + TypeScript + Vite`
-- 结果绑定：`GET /adaptation-packs/{pack_name}/latest-result` 返回显式 `job_id` 绑定，避免共享报告误引用
-- 兼容策略：旧版页面继续保留在 `/legacy`
-- 控制台增强：最近任务区支持直接复跑历史任务，适合低成本验路和结果重算
-- 控制台增强：最近任务区会优先置顶运行中的任务，并支持按能力筛选
-- 控制台增强：能力筛选会同步到地址栏 `?capability=`，刷新后仍可恢复当前视角
-- 控制台增强：任务状态筛选支持 `?jobStatus=running|completed|failed`，便于直接打开运行中或失败视角
-- 控制台增强：最近任务支持按项目名、source、target、pack、summary 关键词搜索，并同步到 `?jobSearch=`
-
-## 环境准备
-
-先准备 Python 环境：
-
-```powershell
-python -m venv E:\work\.venvs\ai-manga-factory
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe -m pip install -r requirements.txt
+```text
+.
+├── apps
+│   ├── api
+│   ├── web
+│   └── worker
+├── packages
+│   ├── provider-sdk
+│   ├── shared-kernel
+│   ├── ui
+│   └── workflow-spec
+├── infra
+├── docs
+├── data
+├── legacy_archive
+└── secrets
 ```
 
-再准备前端依赖：
+## 应用职责
 
-```powershell
-cd E:\work\project-manager\workhome\projects\ai-manga-factory\web
-& "C:\Program Files\nodejs\npm.cmd" install
+- `apps/api`：FastAPI 后端，负责项目、章节、资产、工作流、任务执行、监控与预览 API
+- `apps/web`：Google Stitch 风格控制台，负责项目总览、资产库、流程编排和监控页面
+- `apps/worker`：异步执行与断点续跑工作节点
+- `packages/shared-kernel`：共享枚举、值对象、契约和通用工具
+- `packages/workflow-spec`：节点编排协议、校验器和模板
+- `packages/provider-sdk`：模型、音频、存储适配层
+- `packages/ui`：设计令牌与组件基元
+
+## 开发路线
+
+1. `Phase 1`：仓库重组、最小 API/Web/Worker 入口、迁移说明
+2. `Phase 2`：后端领域模型、任务执行引擎、数据库 schema
+3. `Phase 3`：项目总览、章节推进、资产库、监控与预览
+4. `Phase 4`：可视化编排、多智能体审核、提示词进化闭环
+5. `Step 5`：真实 async worker、数据库队列、checkpoint resume
+6. `Step 6`：本地预览文件、多目标归档适配层、统一预览入口、归档补同步队列
+
+## 本地启动
+
+### 一键启动
+
+```bash
+cd /Users/link/work/ai-manga-factory
+make start
+make restart
+make status
+make health
+make logs
 ```
 
-## 启动方式
+也可以直接执行：
 
-统一入口：
+```bash
+bash scripts/run/start_services.sh
+bash scripts/run/status_services.sh
+bash scripts/run/health_services.sh
+```
 
-```powershell
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py backend
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py web
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py build-web
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py health --base-url http://127.0.0.1:8000
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py all
+默认行为：
+
+- 自动补齐 `apps/api/.venv`、`apps/worker/.venv`
+- `apps/web/node_modules` 不存在时自动执行 `npm install`
+- 后台启动 `api`、`web`、`worker`
+- 日志写入 `logs/services/`
+
+开发模式入口：
+
+```bash
+cd /Users/link/work/ai-manga-factory
+make api
+make web
+make worker
+make logs SERVICE=api LINES=20 FOLLOW=1
+```
+
+停止服务：
+
+```bash
+cd /Users/link/work/ai-manga-factory
+make stop
+```
+
+查看日志：
+
+```bash
+cd /Users/link/work/ai-manga-factory
+make logs
+make logs SERVICE=api
+make logs SERVICE=web FOLLOW=1
+make logs LINES=100
+```
+
+### API
+
+```bash
+cd /Users/link/work/ai-manga-factory/apps/api
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Web
+
+```bash
+cd /Users/link/work/ai-manga-factory/apps/web
+npm install
+npm run dev
+```
+
+### Worker
+
+```bash
+cd /Users/link/work/ai-manga-factory/apps/worker
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+python src/entrypoints/main.py --poll-interval 2
+```
+
+### 预览与归档
+
+```bash
+cd /Users/link/work/ai-manga-factory
+cp .env.example .env
+```
+
+关键配置：
+
+- `ARCHIVE_TARGETS`：归档目标列表，默认 `local-archive,object-storage`
+- `OBJECT_STORAGE_MODE`：对象存储归档模式，`mirror` 或 `s3`
+- `ARCHIVE_INDEX_PATH`：归档索引 manifest 文件
+- `ARCHIVE_SYNC_MAX_ATTEMPTS`：归档补同步最大重试次数，默认 `3`
+- `OBJECT_STORAGE_ROOT`：对象存储镜像根目录
+- `OBJECT_STORAGE_BUCKET`：对象存储 bucket 名称
+- `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`：启用 `OBJECT_STORAGE_MODE=s3` 时使用
+- `ARK_API_KEY`：启用 Ark 文本/视频 provider 的 API Key
+- `ARK_TEXT_MODEL` / `ARK_VIDEO_MODEL`：Ark 分镜与视频默认模型
+- `QUARK_PAN_MODE` / `ALIYUNDRIVE_MODE`：网盘归档模式，`mirror` 或 `api`
+- `QUARK_PAN_CONFIG_DIR` / `ALIYUNDRIVE_CONFIG_DIR`：网盘 SDK 登录态目录
+- `QUARK_PAN_COOKIE_FILE`：夸克 Cookie 文件路径，也支持 `AI_MANGA_FACTORY_QUARK_COOKIE`
+- `QUARK_PAN_MIRROR_ROOT` / `ALIYUNDRIVE_MIRROR_ROOT`：mirror 模式下的本地镜像根目录
+- `POST /api/v1/assets/artifacts/{artifact_id}/archive-sync-runs`：为指定 artifact 创建远端归档补同步任务
+
+网盘认证准备：
+
+```bash
+cd /Users/link/work/ai-manga-factory
+python3 scripts/auth_remote_storage.py --provider quark-pan --prepare-qr
+python3 scripts/auth_remote_storage.py --provider quark-pan
+python3 scripts/auth_remote_storage.py --provider aliyundrive
 ```
 
 说明：
-- `backend` 启动 FastAPI 后端
-- `web` 启动 Vite 前端开发服务
-- `build-web` 构建前端静态资源
-- `health` 检查关键接口是否在线
-- `all` 同时启动前后端，适合本地开发联调
 
-启动后端：
+- Quark API 模式读取 `AI_MANGA_FACTORY_QUARK_COOKIE`、`QUARK_PAN_COOKIE_FILE` 或认证脚本落下来的 Cookie
+- AliyunDrive API 模式读取 `ALIYUNDRIVE_CONFIG_DIR` 下的 SDK 登录态
+- 生产运行时不执行交互式登录；worker 只消费已经准备好的凭证和登录态
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\run_backend.ps1
+### 项目初始化生产版
+
+- `POST /api/v1/projects/{id}/initialize` 现在走真实初始化生成链
+- 默认 provider 候选链为 `ark-story -> llm-story`
+- 响应里的 `generation_trace` 会返回命中 provider、回退轨迹和 usage 信息
+- 可选传入 `routing_mode` 与 `manual_provider` 强制指定初始化模型
+
+### 多智能体审核自动执行
+
+- `POST /api/v1/reviews` 现在会对 `multi-agent` 审核任务自动执行
+- 默认审核 provider 候选链为 `ark-story -> llm-story`
+- 审核结果会写回 `review_tasks.result_payload`
+- 审核建议会自动同步到共享记忆和 prompt feedback
+- 工作流编排页可查看 blocking status、命中 provider 和主要 findings
+
+### 认证、权限、审计与配置中心
+
+- 当 `AUTH_ENABLED=true` 或任一 `AUTH_BOOTSTRAP_*_TOKEN` 已配置时，`/api/v1/**` 会启用 Bearer Token 认证
+- 当前内建角色为 `admin`、`operator`、`reviewer`、`viewer`
+- `GET /api/v1/auth/me` 可查看当前身份
+- `GET /api/v1/settings/overview` 与 `PATCH /api/v1/settings/providers/{provider_key}` 组成配置中心首版
+- `GET /api/v1/audit-logs` 可查看关键写操作的审计记录
+- 前端如果要直接访问已开启认证的 API，可在 web 环境里配置 `VITE_API_TOKEN`
+
+推荐的本地启动方式：
+
+```bash
+AUTH_BOOTSTRAP_ADMIN_TOKEN=dev-admin-token \
+VITE_API_TOKEN=dev-admin-token \
+make start
 ```
 
-开发模式再开一个终端启动前端：
+### 监控、预算与 Worker 健康
 
-```powershell
-E:\work\project-manager\workhome\projects\ai-manga-factory\start_web.bat
+- `GET /api/v1/monitoring/providers` 返回 provider 用量与当前阈值状态
+- `GET /api/v1/monitoring/overview` 返回 provider 用量、活跃告警、worker 心跳与作业摘要
+- `GET /metrics` 返回 Prometheus 文本指标
+- 当 provider 累积消耗超过 `budget_threshold` 时，会生成持久化预算告警记录
+- worker 会持续写入心跳，超过 `WORKER_STALE_AFTER_SECONDS` 未更新会显示为 `stale`
+- 前端监控台现在可直接查看预算告警、worker 健康、路由回退与模型消耗明细
+
+Prometheus / Grafana 可通过 profile 启动：
+
+```bash
+cd /Users/link/work/ai-manga-factory
+make observability
 ```
 
-访问入口：
+默认入口：
 
-- 新版前端：`http://127.0.0.1:5173`
-- 后端 API：`http://127.0.0.1:8000`
-- 后端直出构建版前端：`http://127.0.0.1:8000/`
-- 旧版控制台：`http://127.0.0.1:8000/legacy`
+- Prometheus: `http://127.0.0.1:9090`
+- Grafana: `http://127.0.0.1:3000`
+- 预置 dashboard: `AI Manga Factory Overview`
 
-说明：新版前端优先承担项目运行控制台职责，旧版控制台暂时保留任务创建与部分操作型表单。
+### 回归与验收入口
 
-如果要让后端直接服务新版前端，先构建：
+- 统一回归脚本：`bash /Users/link/work/ai-manga-factory/scripts/test.sh`
+- Playwright smoke 列表：`cd /Users/link/work/ai-manga-factory/apps/web && npm run test:e2e:list`
+- 如本机已准备浏览器，可执行：`RUN_E2E_BROWSER=1 bash /Users/link/work/ai-manga-factory/scripts/test.sh`
+- demo project seed：`data/demo_projects/dpcq_chapter_seed.md`
 
-```powershell
-E:\work\project-manager\workhome\projects\ai-manga-factory\build_web.bat
-```
+### 生产部署骨架
 
-## 常用脚本
+- 生产 compose：`infra/compose/docker-compose.prod.yml`
+- 生产环境变量模板：`infra/compose/.env.prod.example`
+- 生产 compose 说明：`infra/compose/README.md`
+- 反向代理与静态站点：`infra/caddy/Caddyfile`
+- 环境校验脚本：`scripts/validate_prod_env.sh`
+- 一键部署脚本：`scripts/deploy_prod.sh`
+- 生产栈校验脚本：`scripts/verify_prod_stack.sh`
+- Docker runtime 检查脚本：`scripts/require_docker_runtime.sh`
+- 最小生产任务 smoke：`scripts/run_factory_smoke.sh`
+- 发布快照脚本：`scripts/create_release_manifest.sh`
+- 备份脚本：`scripts/backup_postgres.sh`
+- 恢复脚本：`scripts/restore_postgres.sh`
+- 回滚脚本：`scripts/rollback_prod.sh`
+- 端点巡检脚本：`scripts/check_production_endpoints.sh`
+- 运行手册：`docs/operations/production-runbook.md`
+- 发布检查单：`docs/operations/release-checklist.md`
+- 回滚手册：`docs/operations/rollback-runbook.md`
+- 部署演练模板：`docs/operations/deployment-drill-template.md`
 
-```powershell
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\create_adaptation_pack.py --pack-name dpcq_ch1_20 --source-title "斗破苍穹" --chapter-start 1 --chapter-end 20
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\build_source_url_manifest.py --pack-name dpcq_ch1_20 --force
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\collect_source_text.py --pack-name dpcq_ch1_20 --source-dir E:\novels\dpcq_chapters --chapter-start 1 --chapter-end 20 --overwrite
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\playwright_source_capture.py login --pack-name dpcq_ch1_20 --config-file adaptations\dpcq_ch1_20\source\playwright_capture.template.json
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\playwright_source_capture.py capture --pack-name dpcq_ch1_20 --url-manifest adaptations\dpcq_ch1_20\source\incoming\source_urls.json --wait-selector "body"
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\run_source_ingestion_pipeline.py --pack-name dpcq_ch1_20 --toc-file E:\novels\dpcq_catalog.html --base-url "https://www.qidian.com"
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\generate_chapter_briefs.py --pack-name dpcq_ch1_20 --chapter-start 1 --chapter-end 20 --force
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\run_adaptation_pack.py --pack-name dpcq_ch1_20 --scene-count 20 --real-images
-E:\work\.venvs\ai-manga-factory\Scripts\python.exe scripts\validate_job_output.py --pack-name dpcq_ch1_20
-```
+## 文档索引
 
-如需自定义 Python 路径，可设置：
+- 架构：`docs/architecture/`
+- 数据库：`docs/database/`
+- 运维：`docs/operations/`
+- 迁移：`docs/migration/`
 
-```powershell
-$env:AI_MANGA_FACTORY_PYTHON="D:\your-path\python.exe"
-```
+## 迁移说明
 
-## 使用说明
-
-- [AI漫剧工厂操作手册](docs/AI漫剧工厂操作手册.md)
-- [小说原文导入工具](docs/小说原文导入工具.md)
-- [Playwright 正版原文抓取](docs/Playwright正版原文抓取.md)
-- [原文获取工具调研](docs/原文获取工具调研.md)
-- [AI漫剧工厂使用说明](docs/ai-manga-factory-使用说明.md)
-- [前后端分离工程化架构](docs/前后端分离工程化架构.md)
-
-## 鍏抽敭楠岃瘉
-
-部署或重启后，先执行：
-
-```powershell
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py verify-deploy --base-url http://127.0.0.1:8000
-```
-
-这会核对 `/health`、`/openapi.json`、`/artifacts-index`、`/jobs/summary`，并检查 OpenAPI 里是否包含关键运行时路由，专门用来收口 `runtime-source-drift`。
-
-需要跑低成本浏览器 smoke 时，执行：
-
-```powershell
-python E:\work\project-manager\workhome\projects\ai-manga-factory\start_project.py smoke-browser --app-url http://127.0.0.1:8000
-```
-
-这会直接调用 `scripts/run_frontend_real_media_smoke.mjs`，是当前最明确的浏览器 smoke 入口。
-
-`check_api.py` 和 `run_test_report.py` 现在也会使用同一套 runtime 核对逻辑，分别用于快速检查和生成报告。
-
-## 资产锁前移与标准化资产卡
-
-当前 pack 模式下，资产锁已经从单纯的提示词约束前移到完整的章节生产链路。对启用了 `asset_lock.json` 的适配包，章节生产会同时加载：
-
-- `adaptations/<pack>/asset_lock.json`
-- `adaptations/<pack>/assets/characters/character_cards.json`
-- `adaptations/<pack>/assets/scenes/scene_cards.json`
-
-这三类文件分别承担不同职责：
-
-- `asset_lock.json`：角色固定 prompt、音色映射、参考图路径、场景基线。
-- `character_cards.json`：标准化角色卡，补充 `dramatic_role`、`visual_traits`、`asset_status`、`reference_assets` 等结构化字段。
-- `scene_cards.json`：标准化场景卡，补充 `baseline_prompt`、`asset_status`、`reference_assets`、镜头约束与环境基线。
-
-注意：
-
-- `主角 / 同伴 / 对手 / 旁白` 这类槽位不再作为正式流程字段传递。
-- 分镜、音频、QA 和 manifest 里应直接使用真实角色名。
-- 槽位词只允许存在于历史兼容逻辑或旧数据里，不能进入新的章节中间产物。
-
-## 章节 JSON 流水线
-
-pack 模式章节运行时，章节目录现在会产出一条明确的 JSON 流水线：
-
-- `story_grounding.json`：章节事实源，提取真实角色、场景锚点、世界规则、候选对白与有效旁白。
-- `storyboard_blueprint.json`：内容驱动的镜头蓝图，确定时长、镜头数、关键帧数、对白角色和出镜角色。
-- `storyboard.json`：最终分镜表，只保留真实 canonical character。
-- `audio_plan.json`：只消费真实角色分镜，生成对白/旁白轨、总线、优先级和 ducking 参数。
-
-其中 `story_grounding.json` 和 `storyboard_blueprint.json` 是后续 QA、复跑和问题定位的首选检查入口。
-
-## 章节时长计划与可审阅资产库
-
-当前 pack 模式支持两层章节时长配置：
-
-- `adaptations/<pack>/pack.json` 中的 `default_target_duration_seconds`
-- `adaptations/<pack>/chapter_briefs.json` 中每章的 `target_duration_seconds`
-
-运行 pack 任务时，系统会把章节级时长整理成 `chapter_duration_plan` 注入 job input，并优先用于 `storyboard_blueprint.json` 的 `target_duration_seconds` 规划。
-
-标准化资产卡也补充为可审阅状态，不再只看占位图：
-
-- `character_cards.json` 新增并维护 `asset_status_detail`、`review_status`、`approval_notes`、`owner`、`review_checklist`、`source_evidence`、`last_verified_job_id`、`usage_scope`
-- `scene_cards.json` 同样维护上述审阅字段，并继续保留 `camera_guardrails`、`continuity_guardrails`
-
-pack 结果沉淀已切到外部 runtime 目录，不再继续回写 `adaptations/<pack>/reports/`。当前应优先查看：
-
-- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\job_<id>`
-- `C:\Users\Administrator\OneDrive\CodexRuntime\ai-manga-factory\artifacts\pack_reports\<pack>\reports`
+旧版实现已整体迁移到 `legacy_archive/`，保留历史脚本、适配包、旧前端和共享模块，便于后续选择性复用。

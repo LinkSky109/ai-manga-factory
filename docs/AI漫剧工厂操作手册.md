@@ -160,7 +160,7 @@ E:\work\.venvs\ai-manga-factory\Scripts\python.exe .\scripts\validate_job_output
 也可以用环境变量：
 
 ```powershell
-$env:ARK_API_KEY="你的 key"
+$env:ARK_API_KEY = $env:MY_FACTORY_ARK_KEY
 ```
 
 然后执行真图模式：

@@ -1,0 +1,25 @@
+{
+  "name": "ai-manga-factory-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "test:e2e": "npx --no-install playwright test",
+    "test:e2e:list": "npx --no-install playwright test --list"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react-swc": "^3.8.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  }
+}

@@ -1,0 +1,306 @@
+# Release Manifest
+
+- Timestamp: 20260406-135301
+- Git SHA: b85178fa80e11072cfe17e7f6a358c090398680f
+- Git Branch: main
+- Env File: /Users/link/work/ai-manga-factory/infra/compose/.env.prod
+- Regression Command: RUN_E2E_BROWSER=1 bash /Users/link/work/ai-manga-factory/scripts/test.sh
+- Deploy Command: bash /Users/link/work/ai-manga-factory/scripts/deploy_prod.sh
+
+## Git Status
+
+```
+ M .dockerignore
+ M .env.example
+ M .gitignore
+ M Dockerfile
+ M README.md
+ D adaptations/dgyx_ch1_20/README.md
+ D adaptations/dgyx_ch1_20/chapter_briefs.json
+ D adaptations/dgyx_ch1_20/pack.json
+ D adaptations/dgyx_ch1_20/reports/README.md
+ D adaptations/dgyx_ch1_20/reports/job_1_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_1_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_24_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_24_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_25_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_25_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_27_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_27_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_28_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_28_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_29_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_29_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_30_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_30_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_31_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_31_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_32_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_32_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_33_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_33_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_34_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_34_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_35_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_35_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_36_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_36_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_37_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_37_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_38_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_38_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_39_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_39_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_40_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_40_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_41_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_41_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_42_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_42_validation.md
+ D adaptations/dgyx_ch1_20/reports/job_43_summary.md
+ D adaptations/dgyx_ch1_20/reports/job_43_validation.md
+ D adaptations/dgyx_ch1_20/reports/latest_result.md
+ D adaptations/dgyx_ch1_20/reports/latest_result_pointer.json
+ D adaptations/dgyx_ch1_20/reports/latest_validation.md
+ D adaptations/dgyx_ch1_20/reports/result_journal.md
+ D adaptations/dpcq_ch1_20/README.md
+ D adaptations/dpcq_ch1_20/asset_lock.json
+ D adaptations/dpcq_ch1_20/assets/characters/.gitkeep
+ D adaptations/dpcq_ch1_20/assets/characters/character_cards.json
+ D adaptations/dpcq_ch1_20/assets/characters/ge_ye_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/nalan_yanran_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/narrator_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/xiao_xun_er_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/xiao_yan_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/xiao_zhan_ref.png
+ D adaptations/dpcq_ch1_20/assets/characters/yao_lao_ref.png
+ D adaptations/dpcq_ch1_20/assets/loras/.gitkeep
+ D adaptations/dpcq_ch1_20/assets/scenes/.gitkeep
+ D adaptations/dpcq_ch1_20/assets/scenes/scene_cards.json
+ D adaptations/dpcq_ch1_20/assets/scenes/wutan_city_ref.png
+ D adaptations/dpcq_ch1_20/assets/voices/.gitkeep
+ D adaptations/dpcq_ch1_20/chapter_briefs.json
+ D adaptations/dpcq_ch1_20/pack.json
+ D adaptations/dpcq_ch1_20/reports/README.md
+ D adaptations/dpcq_ch1_20/reports/agent_browser_qidian_probe.md
+ D adaptations/dpcq_ch1_20/reports/brief_generation_report.md
+ D adaptations/dpcq_ch1_20/reports/i2v_smoke_test.md
+ D adaptations/dpcq_ch1_20/reports/job_10_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_10_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_11_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_11_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_12_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_12_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_13_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_13_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_14_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_14_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_15_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_15_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_16_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_16_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_17_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_17_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_19_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_19_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_20_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_20_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_21_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_21_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_2_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_2_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_3_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_3_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_4_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_4_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_5_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_5_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_6_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_6_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_7_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_7_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_8_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_8_validation.md
+ D adaptations/dpcq_ch1_20/reports/job_9_summary.md
+ D adaptations/dpcq_ch1_20/reports/job_9_validation.md
+ D adaptations/dpcq_ch1_20/reports/latest_result.md
+ D adaptations/dpcq_ch1_20/reports/latest_result_pointer.json
+ D adaptations/dpcq_ch1_20/reports/latest_validation.md
+ D adaptations/dpcq_ch1_20/reports/manual_browser_capture_report.md
+ D adaptations/dpcq_ch1_20/reports/playwright_capture_report.md
+ D adaptations/dpcq_ch1_20/reports/qidian_catalog_live_report.md
+ D adaptations/dpcq_ch1_20/reports/result_journal.md
+ D adaptations/dpcq_ch1_20/reports/source_access_status.md
+ D adaptations/dpcq_ch1_20/reports/source_collection_report.md
+ D adaptations/dpcq_ch1_20/reports/stage_report.md
+ D adaptations/dpcq_ch1_20/source/README.md
+ D adaptations/dpcq_ch1_20/source/chapters/.gitkeep
+ D adaptations/dpcq_ch1_20/source/playwright_capture.template.json
+ D adaptations/dpcq_ch1_20/source/request_cookies.template.json
+ D adaptations/dpcq_ch1_20/source/request_headers.template.json
+ D adaptations/dpcq_ch1_20/source/source_manifest.json
+ D adaptations/dpcq_ch1_20/source/source_urls.template.json
+ D adaptations/dpcq_ch21_40/README.md
+ D adaptations/dpcq_ch21_40/chapter_briefs.json
+ D adaptations/dpcq_ch21_40/pack.json
+ D adaptations/dpcq_ch21_40/reports/README.md
+ D adaptations/dpcq_ch21_40/reports/brief_generation_report.md
+ D adaptations/dpcq_ch21_40/reports/job_18_summary.md
+ D adaptations/dpcq_ch21_40/reports/job_18_validation.md
+ D adaptations/dpcq_ch21_40/reports/latest_result.md
+ D adaptations/dpcq_ch21_40/reports/latest_result_pointer.json
+ D adaptations/dpcq_ch21_40/reports/latest_validation.md
+ D adaptations/dpcq_ch21_40/reports/manual_browser_capture_report.md
+ D adaptations/dpcq_ch21_40/reports/result_journal.md
+ D adaptations/dpcq_ch21_40/reports/source_collection_report.md
+ D adaptations/dpcq_ch21_40/reports/stage_report.md
+ D adaptations/dpcq_ch21_40/source/README.md
+ D adaptations/dpcq_ch21_40/source/playwright_capture.template.json
+ D adaptations/dpcq_ch21_40/source/request_cookies.template.json
+ D adaptations/dpcq_ch21_40/source/request_headers.template.json
+ D adaptations/dpcq_ch21_40/source/source_manifest.json
+ D adaptations/dpcq_ch21_40/source/source_urls.template.json
+ D agents/QUALITY_CONSTITUTION.md
+ D agents/README.md
+ D agents/api-configurator/SOUL.md
+ D agents/art-director/SOUL.md
+ D agents/content-strategist/SOUL.md
+ D agents/director/SOUL.md
+ D agents/image-generator/SOUL.md
+ D agents/prompt-engineer/SOUL.md
+ D agents/qa-engineer/SOUL.md
+ D agents/qa-publisher/SOUL.md
+ D agents/researcher/SOUL.md
+ D agents/scheduler/SOUL.md
+ D agents/screenwriter/SOUL.md
+ D agents/summarizer/SOUL.md
+ D agents/video-generator/SOUL.md
+ D backend/README.md
+ D backend/__init__.py
+ D backend/adaptation_packs.py
+ D backend/config.py
+ D backend/executor.py
+ D backend/main.py
+ D backend/schemas.py
+ D backend/storage.py
+ D build_web.bat
+ D build_web.sh
+ D check_api.py
+ D deploy.sh
+ D deploy/caddy/Caddyfile
+ D deploy/nginx/ai-manga-factory.conf
+ M docker-compose.yml
+ M "docs/AI\346\274\253\345\211\247\345\267\245\345\216\202\346\223\215\344\275\234\346\211\213\345\206\214.md"
+ D final_quality_report.md
+ D frontend/index.html
+ D modules/__init__.py
+ D modules/base.py
+ D modules/finance/__init__.py
+ D modules/finance/service.py
+ D modules/manga/__init__.py
+ D modules/manga/chapter_factory.py
+ D modules/manga/chapter_factory_constants.py
+ D modules/manga/chapter_factory_phase_audio.py
+ D modules/manga/chapter_factory_phase_qa.py
+ D modules/manga/chapter_factory_phase_render.py
+ D modules/manga/chapter_factory_phase_storyboard.py
+ D modules/manga/service.py
+ D modules/registry.py
+ D quality_check_report.json
+ D requirements-source-ingestion.txt
+ D requirements-storage.txt
+ D requirements.txt
+ D run_backend.ps1
+ D run_pack.bat
+ D run_test_report.py
+ M scripts/auth_remote_storage.py
+ D scripts/build_source_url_manifest.py
+ D scripts/capture_cdp_chapters.py
+ D scripts/capture_manual_browser_session.py
+ D scripts/collect_source_text.py
+ D scripts/create_adaptation_pack.py
+ D scripts/finalize_chapter_job.py
+ D scripts/generate_chapter_briefs.py
+ D scripts/import_storyboard_reference.py
+ D scripts/migrate_runtime_data.py
+ D scripts/playwright_source_capture.py
+ D scripts/retry_failed.sh
+ D scripts/run_adaptation_pack.py
+ D scripts/run_frontend_real_media_smoke.mjs
+ D scripts/run_source_ingestion_pipeline.py
+ D scripts/start_generation.sh
+ D scripts/sync_runtime_storage.py
+ D scripts/test_api.py
+ D scripts/test_video.py
+ D scripts/validate_job_output.py
+ D shared/__init__.py
+ D shared/adaptation_quality.py
+ D shared/aliyun_pan_sync.py
+ D shared/asset_lock.py
+ D shared/providers/__init__.py
+ D shared/providers/ark.py
+ D shared/providers/model_usage.py
+ D shared/quark_pan_sync.py
+ D shared/requirement_mining.py
+ D shared/result_depository.py
+ D shared/runtime_consistency.py
+ D shared/runtime_storage.py
+ D shared/source_materials.py
+ D shared/source_tool_catalog.py
+ D shared/storyboard_reference.py
+ D start.bat
+ D start.sh
+ D start_project.py
+ D start_web.bat
+ D start_web.sh
+ D tests/test_adaptation_packs.py
+ D tests/test_asset_lock.py
+ D tests/test_manga_asset_lock.py
+ D tests/test_manga_chapter_factory.py
+ D tests/test_result_depository.py
+ D tests/test_run_test_report.py
+ D tests/test_runtime_consistency.py
+ D tests/test_start_project.py
+ D web/.env.example
+ D web/index.html
+ D web/package-lock.json
+ D web/package.json
+ D web/src/App.tsx
+ D web/src/main.tsx
+ D web/src/styles.css
+ D web/src/types.ts
+ D web/src/vite-env.d.ts
+ D web/tsconfig.app.json
+ D web/tsconfig.json
+ D web/tsconfig.node.json
+ D web/vite.config.ts
+?? Makefile
+?? apps/
+?? backups/
+?? data/demo_projects/
+?? data/fixtures/
+?? data/seeds/
+?? docs/api/
+?? docs/architecture/
+?? docs/database/
+?? docs/migration/
+?? docs/operations/
+?? docs/product/
+?? infra/
+?? legacy_archive/
+?? plans/
+?? pnpm-workspace.yaml
+?? scripts/backup_postgres.sh
+?? scripts/check_production_endpoints.sh
+?? scripts/create_release_manifest.sh
+?? scripts/deploy_prod.sh
+?? scripts/restore_postgres.sh
+?? scripts/rollback_prod.sh
+?? scripts/run/
+?? scripts/run_deployment_drill.sh
+?? scripts/run_factory_smoke.sh
+?? scripts/test.sh
+?? scripts/validate_prod_env.sh
+?? scripts/verify_prod_stack.sh
+?? tests/README.md
+```

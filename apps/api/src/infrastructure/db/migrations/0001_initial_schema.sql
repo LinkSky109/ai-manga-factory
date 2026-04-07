@@ -1,0 +1,325 @@
+CREATE TABLE projects (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(120) NOT NULL UNIQUE,
+  description TEXT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE chapters (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_number INTEGER NOT NULL,
+  title VARCHAR(160) NOT NULL,
+  summary TEXT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'not_started',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_chapter_project_number UNIQUE (project_id, chapter_number)
+);
+
+CREATE TABLE chapter_pipeline_states (
+  id INTEGER PRIMARY KEY,
+  chapter_id INTEGER NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+  stage_key VARCHAR(64) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'not_started',
+  detail TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_chapter_stage UNIQUE (chapter_id, stage_key)
+);
+
+CREATE TABLE character_profiles (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name VARCHAR(120) NOT NULL,
+  appearance TEXT NOT NULL,
+  personality TEXT NOT NULL,
+  lora_path VARCHAR(255) NULL,
+  review_status VARCHAR(32) NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE character_reference_images (
+  id INTEGER PRIMARY KEY,
+  character_id INTEGER NOT NULL REFERENCES character_profiles(id) ON DELETE CASCADE,
+  view_type VARCHAR(32) NOT NULL,
+  asset_path VARCHAR(255) NOT NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE scene_profiles (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name VARCHAR(120) NOT NULL,
+  baseline_prompt TEXT NOT NULL,
+  continuity_guardrails TEXT NULL,
+  review_status VARCHAR(32) NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE voice_profiles (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  character_name VARCHAR(120) NOT NULL,
+  voice_key VARCHAR(120) NOT NULL,
+  provider_key VARCHAR(120) NOT NULL,
+  tone_description TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE workflow_definitions (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name VARCHAR(120) NOT NULL,
+  description TEXT NULL,
+  routing_mode VARCHAR(32) NOT NULL DEFAULT 'smart',
+  spec JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE job_runs (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_id INTEGER NULL REFERENCES chapters(id) ON DELETE SET NULL,
+  workflow_id INTEGER NULL REFERENCES workflow_definitions(id) ON DELETE SET NULL,
+  execution_mode VARCHAR(16) NOT NULL DEFAULT 'sync',
+  routing_mode VARCHAR(32) NOT NULL DEFAULT 'smart',
+  status VARCHAR(32) NOT NULL DEFAULT 'queued',
+  current_step_key VARCHAR(64) NULL,
+  summary TEXT NULL,
+  error_message TEXT NULL,
+  request_payload JSON NOT NULL,
+  queued_at TIMESTAMP NULL,
+  started_at TIMESTAMP NULL,
+  finished_at TIMESTAMP NULL,
+  locked_at TIMESTAMP NULL,
+  last_heartbeat_at TIMESTAMP NULL,
+  worker_id VARCHAR(120) NULL,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE job_run_steps (
+  id INTEGER PRIMARY KEY,
+  job_run_id INTEGER NOT NULL REFERENCES job_runs(id) ON DELETE CASCADE,
+  sequence_no INTEGER NOT NULL,
+  step_key VARCHAR(64) NOT NULL,
+  step_name VARCHAR(120) NOT NULL,
+  provider_type VARCHAR(32) NOT NULL,
+  provider_key VARCHAR(120) NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending',
+  usage_amount NUMERIC(12, 2) NULL,
+  usage_unit VARCHAR(32) NULL,
+  output_snapshot JSON NULL,
+  error_message TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE job_checkpoints (
+  id INTEGER PRIMARY KEY,
+  job_run_id INTEGER NOT NULL REFERENCES job_runs(id) ON DELETE CASCADE,
+  step_key VARCHAR(64) NOT NULL,
+  payload JSON NOT NULL,
+  resume_cursor VARCHAR(64) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE artifacts (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_id INTEGER NULL REFERENCES chapters(id) ON DELETE SET NULL,
+  job_run_id INTEGER NOT NULL REFERENCES job_runs(id) ON DELETE CASCADE,
+  step_key VARCHAR(64) NOT NULL,
+  title VARCHAR(160) NOT NULL,
+  media_kind VARCHAR(32) NOT NULL,
+  provider_key VARCHAR(120) NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'ready',
+  mime_type VARCHAR(120) NOT NULL,
+  artifact_path TEXT NOT NULL,
+  preview_path TEXT NOT NULL,
+  size_bytes INTEGER NULL,
+  artifact_metadata JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE artifact_archives (
+  id INTEGER PRIMARY KEY,
+  artifact_id INTEGER NOT NULL REFERENCES artifacts(id) ON DELETE CASCADE,
+  archive_type VARCHAR(32) NOT NULL DEFAULT 'local-archive',
+  archive_path TEXT NOT NULL,
+  index_key VARCHAR(255) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'archived',
+  remote_url TEXT NULL,
+  checksum_sha256 VARCHAR(64) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE artifact_sync_runs (
+  id INTEGER PRIMARY KEY,
+  artifact_id INTEGER NOT NULL REFERENCES artifacts(id) ON DELETE CASCADE,
+  archive_type VARCHAR(32) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'queued',
+  summary TEXT NULL,
+  error_message TEXT NULL,
+  worker_id VARCHAR(120) NULL,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  started_at TIMESTAMP NULL,
+  finished_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE provider_configs (
+  id INTEGER PRIMARY KEY,
+  provider_key VARCHAR(120) NOT NULL UNIQUE,
+  provider_type VARCHAR(32) NOT NULL,
+  routing_mode VARCHAR(32) NOT NULL DEFAULT 'smart',
+  is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  priority INTEGER NOT NULL DEFAULT 100,
+  budget_threshold NUMERIC(12, 2) NOT NULL DEFAULT 80,
+  config JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE provider_usage_logs (
+  id INTEGER PRIMARY KEY,
+  provider_key VARCHAR(120) NOT NULL,
+  provider_type VARCHAR(32) NOT NULL,
+  project_id INTEGER NULL REFERENCES projects(id) ON DELETE SET NULL,
+  job_run_id INTEGER NULL REFERENCES job_runs(id) ON DELETE SET NULL,
+  metric_name VARCHAR(32) NOT NULL,
+  usage_amount NUMERIC(12, 2) NOT NULL,
+  usage_unit VARCHAR(32) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE prompt_templates (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NULL REFERENCES projects(id) ON DELETE SET NULL,
+  workflow_key VARCHAR(120) NOT NULL,
+  template_version VARCHAR(32) NOT NULL,
+  template_body TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE prompt_feedback (
+  id INTEGER PRIMARY KEY,
+  prompt_template_id INTEGER NOT NULL REFERENCES prompt_templates(id) ON DELETE CASCADE,
+  job_run_id INTEGER NULL REFERENCES job_runs(id) ON DELETE SET NULL,
+  score INTEGER NOT NULL,
+  correction_summary TEXT NOT NULL,
+  corrected_prompt TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE shared_memories (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NULL REFERENCES projects(id) ON DELETE SET NULL,
+  scope_type VARCHAR(32) NOT NULL,
+  scope_key VARCHAR(120) NOT NULL,
+  memory_type VARCHAR(32) NOT NULL,
+  content JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE review_tasks (
+  id INTEGER PRIMARY KEY,
+  project_id INTEGER NULL REFERENCES projects(id) ON DELETE SET NULL,
+  chapter_id INTEGER NULL REFERENCES chapters(id) ON DELETE SET NULL,
+  review_stage VARCHAR(32) NOT NULL,
+  review_type VARCHAR(32) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending',
+  assigned_agents JSON NOT NULL,
+  checklist JSON NOT NULL,
+  findings_summary TEXT NULL,
+  result_payload JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_accounts (
+  id INTEGER PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  display_name VARCHAR(120) NOT NULL,
+  role VARCHAR(32) NOT NULL DEFAULT 'viewer',
+  status VARCHAR(32) NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE access_tokens (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,
+  token_prefix VARCHAR(16) NOT NULL,
+  token_hash VARCHAR(128) NOT NULL UNIQUE,
+  description VARCHAR(255) NOT NULL DEFAULT 'bootstrap-token',
+  is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+  expires_at TIMESTAMP NULL,
+  last_used_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE audit_logs (
+  id INTEGER PRIMARY KEY,
+  actor_user_id INTEGER NULL REFERENCES user_accounts(id) ON DELETE SET NULL,
+  actor_email VARCHAR(255) NULL,
+  actor_role VARCHAR(32) NULL,
+  action VARCHAR(120) NOT NULL,
+  resource_type VARCHAR(120) NOT NULL,
+  resource_id VARCHAR(120) NULL,
+  request_method VARCHAR(16) NOT NULL,
+  request_path VARCHAR(255) NOT NULL,
+  response_status INTEGER NOT NULL,
+  outcome VARCHAR(32) NOT NULL,
+  detail JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE alert_records (
+  id INTEGER PRIMARY KEY,
+  alert_key VARCHAR(160) NOT NULL UNIQUE,
+  scope_type VARCHAR(64) NOT NULL,
+  scope_key VARCHAR(160) NOT NULL,
+  severity VARCHAR(32) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'active',
+  title VARCHAR(160) NOT NULL,
+  message VARCHAR(512) NOT NULL,
+  detail JSON NOT NULL,
+  first_triggered_at TIMESTAMP NOT NULL,
+  last_triggered_at TIMESTAMP NOT NULL,
+  resolved_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE worker_heartbeats (
+  id INTEGER PRIMARY KEY,
+  worker_id VARCHAR(160) NOT NULL UNIQUE,
+  worker_type VARCHAR(64) NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  last_seen_at TIMESTAMP NOT NULL,
+  last_job_id INTEGER NULL,
+  detail JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
